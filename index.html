@@ -190,6 +190,55 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
 .tl .by{color:var(--muted);font-size:12px;margin-top:2px}
 .tl .txt{margin-top:4px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px}
 .empty{padding:22px 8px;color:var(--muted);text-align:center}
+.bell{position:relative;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;color:var(--ink);padding:0}
+.bell:hover{border-color:var(--accent)}
+.bell .badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--bad);color:#fff;font:700 10.5px/18px var(--f-mono);text-align:center}
+.bell.ring svg{animation:ring .7s ease-in-out}
+@keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(16deg)}40%{transform:rotate(-14deg)}60%{transform:rotate(9deg)}80%{transform:rotate(-5deg)}}
+.count.alert{background:var(--bad);color:#fff}
+.feed-item.unread{background:var(--accent-soft);border-radius:8px;padding-inline:8px;margin-inline:-8px;border-bottom-color:transparent}
+.feed-item .new{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:1px}
+.ngroup{margin:12px 0 2px}
+@media (prefers-reduced-motion:reduce){ .bell.ring svg{animation:none} }
+
+/* ---- Device frames: phone around the bot chat, laptop around the team dashboard ---- */
+.bot-grid{grid-template-columns:300px minmax(320px,400px)}
+#p-chat{align-items:center}
+#p-chat .controls{align-self:stretch}
+.phone{width:100%;max-width:400px;max-height:860px;border:11px solid #151a18;border-radius:48px;box-shadow:0 0 0 2px #3b4340,0 18px 40px rgba(23,32,29,.22)}
+.statusbar{position:relative;display:flex;justify-content:space-between;align-items:center;padding:9px 22px 3px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:600}
+.statusbar .island{position:absolute;left:50%;top:6px;transform:translateX(-50%);width:96px;height:26px;border-radius:999px;background:#151a18}
+.statusbar .sicons{display:flex;gap:5px;align-items:center}
+.homebar{display:grid;place-items:center;height:20px;background:var(--chat)}
+.homebar i{width:120px;height:5px;border-radius:999px;background:var(--ink);opacity:.8}
+.menu{bottom:78px}
+#v-dash{flex-direction:column;align-items:center}
+.laptop{flex:1;min-height:0;width:100%;max-width:1480px;display:flex;flex-direction:column;align-items:center}
+.lid{position:relative;flex:1;min-height:0;width:calc(100% - 64px);display:flex;background:#151a18;border-radius:20px 20px 0 0;padding:22px 14px 14px;box-shadow:0 0 0 2px #3b4340}
+.lid .cam{position:absolute;top:8px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#39413e}
+.screen{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--bg);border-radius:6px;overflow:hidden}
+.browserbar{display:flex;align-items:center;gap:12px;padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.browserbar .lights{display:flex;gap:6px}
+.browserbar .lights i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.browserbar .url{flex:0 1 380px;margin:0 auto;padding:3px 12px;border-radius:7px;background:var(--soft);color:var(--muted);font:12px var(--f-mono);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px}
+.base{width:100%;height:16px;flex:none;border-radius:0 0 16px 16px;background:linear-gradient(#d3d9d5,#a9b2ad);position:relative;box-shadow:0 10px 24px rgba(23,32,29,.18)}
+.base::before{content:"";position:absolute;left:50%;top:0;width:120px;margin-left:-60px;height:6px;border-radius:0 0 8px 8px;background:#9aa39e}
+@media (max-width:1000px){
+  .bot-grid{grid-template-columns:minmax(0,1fr)}
+  .lid{width:100%;padding:12px 8px 8px;border-radius:14px 14px 0 0}
+  .lid .cam{top:3px}
+  .browserbar .lights{display:none}
+  .screen-body{padding:10px}
+  .base{height:10px}
+}
+@media (max-width:520px){
+  .phone{border-width:7px;border-radius:36px}
+  .lid{background:transparent;box-shadow:none;padding:0}
+  .lid .cam,.base,.browserbar{display:none}
+  .screen{border-radius:0;background:transparent}
+  .screen-body{padding:0}
+}
 .backlink{border:0;background:none;color:var(--accent);font-weight:600;padding:0;align-self:flex-start}
 .locked{font-size:12.5px;color:var(--muted);background:var(--soft);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
 
@@ -244,7 +293,7 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
       <button type="button" data-view="bot" aria-selected="true">Bot demo</button>
       <button type="button" data-view="dash" aria-selected="false">Team dashboard</button>
     </nav>
-    <div class="topright"><button class="ghost" id="resetBtn" type="button">Reset demo</button></div>
+    <div class="topright"><button class="bell" id="bellBtn" type="button" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button><button class="ghost" id="resetBtn" type="button">Reset demo</button></div>
   </header>
 
   <div class="views gutter">
@@ -266,6 +315,7 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
               <button class="ghost" id="resetChatBtn" type="button">Reset chat</button>
             </div>
             <div class="phone">
+              <div class="statusbar" aria-hidden="true"><span class="mono">9:41</span><span class="island"></span><span class="sicons"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x=".5" y=".5" width="18" height="10" rx="3"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="currentColor" stroke="none"/><path d="M20.5 4v3" stroke-linecap="round"/></svg></span></div>
               <div class="phone-head"><div class="av">BT</div><div><b>Buyer Tracker</b><span id="headSub">bot</span></div></div>
               <div class="msgs" id="msgs" aria-live="polite"></div>
               <div class="menu" id="attachMenu" hidden>
@@ -276,10 +326,11 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
               <div class="menu" id="voiceMenu" hidden></div>
               <form class="composer" id="composer">
                 <button type="button" class="iconbtn" id="attachBtn" aria-label="Attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-                <textarea id="input" rows="1" placeholder="Type a lead, e.g. Rahul, Surat, 98250 12345…" aria-label="Message"></textarea>
+                <textarea id="input" rows="1" placeholder="Type a lead…" aria-label="Message"></textarea>
                 <button type="button" class="iconbtn" id="micBtn" aria-label="Send a voice note"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
                 <button type="submit" class="iconbtn send" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5 21 12 3 3.5l2.5 7L15 12l-9.5 1.5z"/></svg></button>
               </form>
+              <div class="homebar" aria-hidden="true"><i></i></div>
             </div>
           </div>
         </div>
@@ -287,7 +338,17 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
     </section>
 
     <!-- Dashboard -->
-    <section class="view" id="v-dash" aria-label="Team dashboard"></section>
+    <section class="view" id="v-dash" aria-label="Team dashboard">
+      <div class="laptop">
+        <div class="lid"><span class="cam" aria-hidden="true"></span>
+          <div class="screen">
+            <div class="browserbar" aria-hidden="true"><span class="lights"><i></i><i></i><i></i></span><span class="url">app.buyertracker.in/dashboard</span></div>
+            <div class="screen-body" id="dashRoot"></div>
+          </div>
+        </div>
+        <div class="base" aria-hidden="true"></div>
+      </div>
+    </section>
   </div>
 </div>
 <div class="overlay" id="modal" hidden></div>
@@ -531,7 +592,7 @@ const member=id=>S.team.find(m=>m.id===id);
 const memberByName=n=>S.team.find(m=>m.name===n);
 const colorOf=id=>({amit:'var(--c1)',priya:'var(--c2)',sneha:'var(--c3)',rohit:'var(--c4)',ketan:'var(--ink)'})[id]||'var(--c4)';
 
-function ev(b,type,by,t,extra){ const e={type,by,t,...extra}; b.history.push(e); return e; }
+function ev(b,type,by,t,extra){ const e={type,by,t,...extra}; b.history.push(e); if(S&&S.seen) queueMicrotask(updateBell); return e; }
 function newBuyer(o){
   const id=S.nextId++;
   const ph=o.intl?{phone:fmtIntl(o.intl),phoneKey:o.intl}:{phone:fmtIn(o.ph),phoneKey:'91'+o.ph};
@@ -949,8 +1010,8 @@ const T={ today:()=>sod(now()), week:()=>sod(now())-((new Date().getDay()+6)%7)*
 function lastRemark(b){ for(let i=b.history.length-1;i>=0;i--) if(b.history[i].type==='remark') return b.history[i]; return null; }
 function statusOf(b){ if(b.status==='optedout') return ['optedout','Opted out']; if(b.status==='archived') return ['archived','Archived']; if(b.tags.includes('Retail')) return ['retail','Retail']; return ['active','Active']; }
 function uav(id,size=32){ const m=member(id); return `<span class="uav" style="background:${colorOf(id)};width:${size}px;height:${size}px;color:var(--panel)">${m?initials(m.name):'?'}</span>`; }
-function evLine(e,b){
-  const who=member(e.by)?member(e.by).name:'Someone';
+function evLine(e,b,me){
+  const who=me&&e.by===me?'You':member(e.by)?member(e.by).name:'Someone';
   if(e.type==='created') return `<b>${hx(who)}</b> added <b>${hx(b.name)}</b> via ${hx(e.via)}`;
   if(e.type==='remark') return `<b>${hx(who)}</b> added a <span class="cat">${hx(e.cat)}</span> remark on <b>${hx(b.name)}</b>`;
   if(e.type==='deal') return `<b>${hx(who)}</b> opened a deal with <b>${hx(b.name)}</b>`;
@@ -960,17 +1021,61 @@ function evLine(e,b){
 }
 const dotLetter={created:'+',remark:'R',deal:'₹',stage:'₹',product:'P',status:'S',edit:'E',owner:'O'};
 
+/* ---------- Notifications ---------- */
+// Dashboard changes plus everything the WhatsApp bot did since the demo started (the bot keeps its own buyer list).
+function notifEvents(){
+  const out=allEvents().map(x=>({...x,bot:false}));
+  for(const b of S.botBuyers) for(const e of b.history) if(e.t>=S.bootT) out.push({b,e,bot:true});
+  return out.sort((a,c)=>c.e.t-a.e.t);
+}
+const seenOf=id=>S.seen[id]!=null?S.seen[id]:S.bootT;
+function unreadFor(id){ const seen=seenOf(id); return notifEvents().filter(x=>x.e.t>seen&&x.e.by!==id).length; }
+function updateBell(){
+  if(!S||!S.seen) return;
+  const n=unreadFor(S.user||ADMIN_ID); const badge=$('#bellBadge'); const bell=$('#bellBtn');
+  badge.hidden=!n; badge.textContent=n>99?'99+':n; bell.setAttribute('aria-label',n?`Notifications, ${n} unread`:'Notifications');
+  if(n>(S.bellN||0)){ bell.classList.remove('ring'); void bell.offsetWidth; bell.classList.add('ring'); }
+  S.bellN=n;
+  const c=$('#navNotifCount'); if(c){ c.hidden=!n; c.textContent=n; }
+}
+const NF=[['all','All'],['created','Saved numbers'],['remark','Remarks'],['deal','Deals'],['status','Status and owner']];
+const nfMatch=(f,t)=>f==='all'||t===f||(f==='deal'&&t==='stage')||(f==='status'&&['status','owner','edit'].includes(t))||(f==='created'&&t==='product');
+function notifsHTML(u){
+  const prev=S.dash.notifPrev; const f=S.dash.nf||'all';
+  const items=notifEvents().filter(x=>nfMatch(f,x.e.type)).slice(0,80);
+  const fresh=items.filter(x=>x.e.t>prev&&x.e.by!==u.id).length;
+  const td=sod(now()); const groupOf=t=>t>=td?'Today':t>=td-DAY?'Yesterday':'Earlier';
+  let h=`<div class="work-head"><div><h2>Notifications</h2><p>Every number saved and every change made by the team, newest first.</p></div></div>
+    <div class="chips" role="group" aria-label="Filter notifications">${NF.map(([k,l])=>`<button type="button" class="chip" data-nf="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</div>
+    <div class="card"><div class="card-h"><h2>${fresh?`${fresh} new since you last looked`:'You are all caught up'}</h2><span class="muted" style="font-size:12.5px">Showing ${items.length}</span></div><div class="feed">`;
+  if(!items.length) h+='<div class="empty">Nothing here yet.</div>';
+  let g=null;
+  for(const {b,e,bot} of items){
+    const gg=groupOf(e.t); if(gg!==g){ g=gg; h+=`<h3 class="ngroup">${gg}</h3>`; }
+    const unread=e.t>prev&&e.by!==u.id; const inDash=S.buyers.some(x=>x.id===b.id);
+    const detail=e.type==='created'?`${hx(b.phone)}${b.location?' · '+hx(b.location):''}${b.products&&b.products[0]?' · '+hx(prodLabel(b.products[0])):''}`:e.type==='remark'?`<q>${hx(e.text)}</q>`:e.text?hx(e.text):'';
+    h+=`<div class="feed-item${unread?' unread':''}"><span class="dot ${e.type}">${dotLetter[e.type]||'•'}</span><div><div>${evLine(e,b,u.id)}${unread?'<span class="new" aria-label="new"></span>':''}</div>${detail?`<div class="muted" style="font-size:12.5px">${detail}</div>`:''}
+      <div class="when">${ago(e.t)}${bot?' · from WhatsApp':''}${inDash?` · <button class="linkbtn" style="font-size:12px" data-buyer="${b.id}" type="button">Open buyer</button>`:''}</div></div></div>`;
+  }
+  return h+'</div></div>';
+}
+
 /* ---------- Dashboard: views ---------- */
 function renderDash(){
-  const el=$('#v-dash');
+  const el=$('#dashRoot');
   if(!S.user){ el.innerHTML=loginHTML(); return; }
   const u=member(S.user); const isAdmin=u.role==='admin'; const v=S.dash.view;
   const nav=[['overview','Overview'],['buyers','Buyers'],['products','Products'],...(isAdmin?[['team','Team']]:[])];
+  // Opening the tab marks everything read; the highlights stay until the user leaves it.
+  if(v==='notifs'){ if(S.dash.notifPrev==null) S.dash.notifPrev=seenOf(u.id); S.seen[u.id]=now(); } else S.dash.notifPrev=null;
+  const n=unreadFor(u.id);
   el.innerHTML=`<div class="dash"><nav class="dnav" aria-label="Dashboard">
       <div class="who">${uav(u.id)}<div><b>${hx(u.name)}</b><span>${isAdmin?'Admin':'Sales rep'}</span></div></div>
       ${nav.map(([k,l,c])=>`<button type="button" class="nav" data-nav="${k}" ${(v===k||(v==='buyer'&&k==='buyers'))?'aria-current="page"':''}>${l}${c?` <span class="count">${c}</span>`:''}</button>`).join('')}
+      <button type="button" class="nav" data-nav="notifs" ${v==='notifs'?'aria-current="page"':''}>Notifications <span class="count alert" id="navNotifCount" ${n?'':'hidden'}>${n}</span></button>
       <div class="spacer"></div><button type="button" class="nav" data-act="logout">Sign out</button></nav>
-    <div class="work" id="work">${v==='overview'?overviewHTML(u):v==='buyers'?buyersHTML(u):v==='buyer'?buyerHTML(u):v==='products'?productsHTML(u):teamHTML(u)}</div></div>`;
+    <div class="work" id="work">${v==='overview'?overviewHTML(u):v==='buyers'?buyersHTML(u):v==='buyer'?buyerHTML(u):v==='products'?productsHTML(u):v==='notifs'?notifsHTML(u):teamHTML(u)}</div></div>`;
+  updateBell();
 }
 function loginHTML(){
   const active=S.team.filter(m=>m.active);
@@ -1263,12 +1368,14 @@ function memberActivity(id){
 function openBuyerInDash(id){ setView('dash'); if(!S.user){ S.afterLogin=id; renderDash(); toast('Sign in to open the buyer.'); return; } S.dash.back=S.dash.view==='buyer'?S.dash.back:S.dash.view; S.dash.view='buyer'; S.dash.buyerId=id; renderDash(); }
 $('#v-dash').addEventListener('submit',e=>{ if(e.target.id!=='loginForm') return; e.preventDefault();
   S.user=e.target.querySelector('input[name=who]:checked').value; S.dash.view='overview'; S.dash.filter='all'; S.dash.owner='all';
-  if(S.afterLogin){ S.dash.view='buyer'; S.dash.buyerId=S.afterLogin; S.dash.back='buyers'; S.afterLogin=null; } renderDash(); });
+  if(S.afterLogin){ S.dash.view='buyer'; S.dash.buyerId=S.afterLogin; S.dash.back='buyers'; S.afterLogin=null; }
+  if(S.afterLoginView){ S.dash.view=S.afterLoginView; S.afterLoginView=null; } renderDash(); });
 $('#v-dash').addEventListener('click',e=>{
   const t=e.target;
   const nav=t.closest('[data-nav]'); if(nav){ S.dash.view=nav.dataset.nav; renderDash(); $('#work')&&($('#work').scrollTop=0); return; }
   const by=t.closest('[data-buyer]'); if(by&&!t.closest('select')){ S.dash.back=S.dash.view; S.dash.view='buyer'; S.dash.buyerId=+by.dataset.buyer; renderDash(); $('#work').scrollTop=0; return; }
   const bf=t.closest('[data-bf]'); if(bf){ S.dash.filter=bf.dataset.bf; renderDash(); return; }
+  const nf=t.closest('[data-nf]'); if(nf){ S.dash.nf=nf.dataset.nf; renderDash(); return; }
   const mem=t.closest('[data-member]'); if(mem){ memberActivity(mem.dataset.member); return; }
   const tb=t.closest('[data-tbot]'); if(tb){ const m=member(tb.dataset.tbot); m.bot=!m.bot; fillRepSel(); toast(m.bot?`${m.name} can now add buyers on WhatsApp`:`${m.name} can no longer use the bot`); renderDash(); return; }
   const em=t.closest('[data-editm]'); if(em){ memberModal(member(em.dataset.editm)); return; }
@@ -1303,6 +1410,9 @@ $('#scenList').innerHTML=SCEN.map((g,gi)=>`<div class="scen-group"><h3>${g.g}</h
 $('#scenList').addEventListener('click',e=>{ const b=e.target.closest('.scen-btn'); if(b) runLive(SCEN[+b.dataset.g].items[+b.dataset.i]); });
 $('#resetChatBtn').addEventListener('click',resetChat);
 $('#resetBtn').addEventListener('click',()=>{ boot(); toast('Demo reset'); });
+$('#bellBtn').addEventListener('click',()=>{ setView('dash');
+  if(!S.user){ S.afterLoginView='notifs'; renderDash(); toast('Sign in to see notifications.'); return; }
+  S.dash.view='notifs'; renderDash(); $('#work')&&($('#work').scrollTop=0); });
 const input=$('#input');
 $('#composer').addEventListener('submit',e=>{ e.preventDefault(); const v=input.value; input.value=''; autosize(); closeMenus(); onText(v); });
 input.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); $('#composer').requestSubmit(); } });
@@ -1326,7 +1436,9 @@ let toastT; function toast(t){ if(S&&S.sync) return; const el=$('#toast'); el.te
 function boot(){
   timers.forEach(clearTimeout); timers=[]; const v=S?S.view:null;
   buildState(); S.bootT=now(); S.view=v||'bot';
-  fillRepSel(); renderSaved(); renderChat(); setView(S.view);
+  // Each person last checked notifications half an hour ago, so the demo opens with a few unread.
+  S.seen={}; S.team.forEach(m=>S.seen[m.id]=DEMO_NOW-30*60000); S.bellN=0;
+  fillRepSel(); renderSaved(); renderChat(); setView(S.view); updateBell();
 }
 boot();
 const savedView=safeGet('bt-view'); if(savedView&&['bot','dash'].includes(savedView)) setView(savedView);
