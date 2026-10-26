@@ -319,7 +319,7 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
               <div class="phone-head"><div class="av">BT</div><div><b>Buyer Tracker</b><span id="headSub">bot</span></div></div>
               <div class="msgs" id="msgs" aria-live="polite"></div>
               <div class="menu" id="attachMenu" hidden>
-                <button type="button" data-att="contact">Forward a contact <small>Hardik Shah</small></button>
+                <button type="button" data-att="contact">Forward a contact <small>Varun Kapoor</small></button>
                 <button type="button" data-att="photo">Photo of a visiting card <small>Phase 2</small></button>
                 <button type="button" data-att="doc">PDF file <small>Unreadable</small></button>
               </div>
@@ -365,7 +365,8 @@ function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_
 const CITY = {mumbai:'Mumbai',bombay:'Mumbai',surat:'Surat',vadodara:'Vadodara',baroda:'Vadodara',ahmedabad:'Ahmedabad',ahmadabad:'Ahmedabad',amdavad:'Ahmedabad',
   gandhinagar:'Gandhinagar',rajkot:'Rajkot',bhavnagar:'Bhavnagar',jamnagar:'Jamnagar',delhi:'Delhi','new delhi':'Delhi',bangalore:'Bengaluru',bengaluru:'Bengaluru',
   kolkata:'Kolkata',calcutta:'Kolkata',hyderabad:'Hyderabad',pune:'Pune',poona:'Pune',jaipur:'Jaipur',chennai:'Chennai',madras:'Chennai',indore:'Indore',nagpur:'Nagpur',
-  lucknow:'Lucknow',kochi:'Kochi',cochin:'Kochi',
+  lucknow:'Lucknow',kochi:'Kochi',cochin:'Kochi',noida:'Noida',gurugram:'Gurugram',gurgaon:'Gurugram',ghaziabad:'Ghaziabad',faridabad:'Faridabad',
+  thane:'Thane','navi mumbai':'Navi Mumbai',kalyan:'Kalyan','दिल्ली':'Delhi',
   'सूरत':'Surat','मुंबई':'Mumbai','अहमदाबाद':'Ahmedabad','राजकोट':'Rajkot','સુરત':'Surat','અમદાવાદ':'Ahmedabad','રાજકોટ':'Rajkot','વડોદરા':'Vadodara'};
 const COUNTRY = {dubai:'Dubai, UAE',uae:'UAE',sharjah:'Sharjah, UAE','abu dhabi':'Abu Dhabi, UAE',oman:'Oman',muscat:'Muscat, Oman',nepal:'Nepal',kathmandu:'Kathmandu, Nepal',
   bangladesh:'Bangladesh',dhaka:'Dhaka, Bangladesh','sri lanka':'Sri Lanka',colombo:'Colombo, Sri Lanka',saudi:'Saudi Arabia',riyadh:'Riyadh, Saudi Arabia',
@@ -476,7 +477,8 @@ function matchSource(t){ t=low(t); for(const s of SOURCES) if(t.trim()===low(s))
 function extractName(w){
   const toks=w.split(/\s+/).filter(Boolean); const name=[];
   for(let i=0;i<toks.length && i<16;i++){ const t=toks[i];
-    const bad = !/^[a-z][a-z'.-]*$/.test(t) || t.length<2 || STOP.has(t) || CITY[t] || COUNTRY[t];
+    const two=t+' '+(toks[i+1]||''); // two-word places like Navi Mumbai or Abu Dhabi
+    const bad = !/^[a-z][a-z'.-]*$/.test(t) || t.length<2 || STOP.has(t) || CITY[t] || COUNTRY[t] || CITY[two] || COUNTRY[two];
     if(!name.length){ if(!bad) name.push(t); } else { if(bad) break; name.push(t); if(name.length===3) break; } }
   return name.length ? titleCase(name.join(' ')) : null;
 }
@@ -564,10 +566,10 @@ function matchBrand(text){
   for(const w of t.split(/\s+/).filter(x=>x.length>=3)) for(const [k,b] of [...BRANDS.map(x=>[low(x),x]),['iphone','Apple'],['galaxy','Samsung'],['pixel','Google'],['redmi','Xiaomi'],['airpods','Apple']]){ const dist=lev(w,k); const lim=k.length<=4?1:2; if(dist<=lim&&(!best||dist<best.dist)) best={brand:b,dist,typed:w}; }
   return best?{brand:best.brand,fixed:true,typed:best.typed}:null;
 }
-const CONTACT={name:'Hardik Shah',phone:'9879511223',company:'Shah Mobile Gallery'};
+const CONTACT={name:'Varun Kapoor',phone:'9819511223',company:'Kapoor Mobile Gallery'};
 const VOICES=[
   {label:'Clear voice note',lang:'English',dur:'0:18',text:'New buyer Karan Malhotra from Delhi, number 98110 45678, wants 40 pieces Apple Watch Ultra 2, met him at the Pragati Maidan exhibition, he wants a GST bill'},
-  {label:'Voice note in Hindi',lang:'Hindi',dur:'0:14',text:'Rajkot ke Dilip bhai ka number 9879055443 hai, Redmi Note 14 ke 100 piece chahiye, IndiaMART se aaya, cash payment karega'},
+  {label:'Voice note in Hindi',lang:'Hindi',dur:'0:14',text:'Mumbai ke Sanjay Gupta ka number 9820055443 hai, Redmi Note 14 ke 100 piece chahiye, IndiaMART se aaya, cash payment karega'},
   {label:'Unclear voice note',lang:'Noisy market',dur:'0:06',text:null}];
 const $=s=>document.querySelector(s);
 const DAY=864e5;
@@ -611,14 +613,14 @@ function buildState(){
   S={nextId:1036,dealId:201,buyers:[],repId:'amit',slow:false,drafts:{},last:{},chats:{},pending:{},epoch:{},sync:false,
      user:null,dash:{orange:{key:'month'},brange:{key:'all'},pq:'',view:'overview',buyerId:null,q:'',filter:'all',owner:'all',back:'buyers',teamSel:null},afterLogin:null};
   S.team=[
-    {id:'ketan',name:'Ketan Shah',role:'admin',phone:'9824000001',bot:true,active:true,target:0,joined:N-400*DAY},
-    {id:'amit',name:'Amit Rawal',role:'rep',phone:'9825177001',bot:true,active:true,target:60,joined:N-300*DAY},
-    {id:'priya',name:'Priya Shah',role:'rep',phone:'9925088002',bot:true,active:true,target:60,joined:N-220*DAY},
-    {id:'sneha',name:'Sneha Joshi',role:'rep',phone:'9712044003',bot:true,active:true,target:40,joined:N-90*DAY},
-    {id:'rohit',name:'Rohit Desai',role:'rep',phone:'9099012121',bot:false,active:true,target:40,joined:N-1*DAY}];
+    {id:'ketan',name:'Ketan Arora',role:'admin',phone:'9810000001',bot:true,active:true,target:0,joined:N-400*DAY},
+    {id:'amit',name:'Amit Rawal',role:'rep',phone:'9811177001',bot:true,active:true,target:60,joined:N-300*DAY},
+    {id:'priya',name:'Priya Sharma',role:'rep',phone:'9820088002',bot:true,active:true,target:60,joined:N-220*DAY},
+    {id:'sneha',name:'Sneha Kulkarni',role:'rep',phone:'9819044003',bot:true,active:true,target:40,joined:N-90*DAY},
+    {id:'rohit',name:'Rohit Verma',role:'rep',phone:'9899012121',bot:false,active:true,target:40,joined:N-1*DAY}];
   const dA=(days,h=11,m=20)=>sod(N-days*DAY)+h*3600e3+m*60e3;
   const B=[];
-  const rahul=newBuyer({name:'Rahul Mehta',business:'Mehta Mobiles',ph:'9825012345',location:'Surat',products:[{brand:'Apple',model:'iPhone 16',category:'Phone',qty:'40'}],source:'Exhibition',owner:'priya',addedAt:dA(12)});
+  const rahul=newBuyer({name:'Rahul Khanna',business:'Khanna Mobiles',ph:'9811012345',location:'Delhi',products:[{brand:'Apple',model:'iPhone 16',category:'Phone',qty:'40'}],source:'Exhibition',owner:'priya',addedAt:dA(12)});
   ev(rahul,'remark','priya',dA(10,15),{cat:'Price quote',text:'Quoted ₹79,500 per piece for 40 iPhone 16. He wants to compare with Mumbai rates.'});
   addDeal(rahul,'priya',dA(10,15,30),'iPhone 16',40,79500,'Negotiation');
   ev(rahul,'remark','priya',dA(3,12),{cat:'Negotiation',text:'Asking ₹78,000. Will confirm after Diwali stock check.'});
@@ -626,24 +628,24 @@ function buildState(){
   const farhan=newBuyer({name:'Farhan Qureshi',business:'Qureshi General Trading',intl:'971501234567',location:'Dubai, UAE',overseas:true,products:[{brand:'Samsung',model:'Galaxy S25 Ultra',category:'Phone',qty:'100'}],source:'Referral',remark:'Pays in AED',owner:'amit',addedAt:dA(21)});
   const fd=addDeal(farhan,'amit',dA(19),'Galaxy S25 Ultra',100,98000,'Quoted'); fd.stage='Won'; fd.wonAt=dA(14); ev(farhan,'stage','amit',dA(14),{text:'Deal moved to Won: Galaxy S25 Ultra × 100'});
   ev(farhan,'remark','amit',dA(14,16),{cat:'Payment',text:'50% advance received by bank transfer. Balance on dispatch.'}); B.push(farhan);
-  const nikhil=newBuyer({name:'Nikhil Joshi',ph:'9909055443',location:'Vadodara',products:[{brand:'Garmin',model:'Fenix 8',category:'Watch',qty:'15'}],source:'Market visit',owner:'amit',addedAt:dA(6)});
+  const nikhil=newBuyer({name:'Nikhil Joshi',ph:'9820955443',location:'Thane',products:[{brand:'Garmin',model:'Fenix 8',category:'Watch',qty:'15'}],source:'Market visit',owner:'amit',addedAt:dA(6)});
   ev(nikhil,'remark','amit',dA(5,17),{cat:'Call update',text:'Sent Garmin price list on WhatsApp.'}); B.push(nikhil);
-  const sunil=newBuyer({name:'Sunil Patel',ph:'9898011122',location:'Rajkot',products:[{brand:'Samsung',model:'Galaxy A55',category:'Phone',qty:'80'}],source:'Cold call',owner:'amit',addedAt:dA(80)});
+  const sunil=newBuyer({name:'Sunil Arora',ph:'9818011122',location:'Gurugram',products:[{brand:'Samsung',model:'Galaxy A55',category:'Phone',qty:'80'}],source:'Cold call',owner:'amit',addedAt:dA(80)});
   ev(sunil,'remark','amit',dA(52),{cat:'Not interested',text:'Asked us not to call or message again.'}); sunil.status='optedout'; sunil.statusDate=dA(52); ev(sunil,'status','amit',dA(52),{text:'Marked as opted out'}); B.push(sunil);
-  const kiran=newBuyer({name:'Kiran Desai',business:'Desai Electronics',ph:'9724066778',location:'Ahmedabad',products:[{brand:'Xiaomi',model:'Redmi Note 14',category:'Phone',qty:'200'}],source:'Market visit',owner:'priya',addedAt:dA(120)});
+  const kiran=newBuyer({name:'Kiran Desai',business:'Desai Electronics',ph:'9867066778',location:'Navi Mumbai',products:[{brand:'Xiaomi',model:'Redmi Note 14',category:'Phone',qty:'200'}],source:'Market visit',owner:'priya',addedAt:dA(120)});
   kiran.status='archived'; kiran.statusDate=dA(85); ev(kiran,'status','priya',dA(85),{text:'Archived: no reply for 30 days'}); B.push(kiran);
   const deepak=newBuyer({name:'Deepak Soni',business:'Soni Telecom',ph:'9820033445',location:'Mumbai',products:[{brand:'OnePlus',model:'OnePlus 13',category:'Phone',qty:'60'}],source:'IndiaMART',owner:'priya',addedAt:dA(4)});
   addDeal(deepak,'priya',dA(3),'OnePlus 13',60,61000,'Quoted'); B.push(deepak);
   const meera=newBuyer({name:'Meera Iyer',ph:'9850066778',location:'Pune',products:[{brand:'Apple',model:'Apple Watch Series 10',category:'Watch',qty:'25'}],source:'Instagram',owner:'sneha',addedAt:dA(2)}); B.push(meera);
   const ritesh=newBuyer({name:'Ritesh Agarwal',ph:'9830099887',location:'Kolkata',products:[{brand:'Google',model:'Pixel 9',category:'Phone',qty:'1'}],source:'Walk-in',tags:['Retail'],owner:'sneha',addedAt:dA(9)}); B.push(ritesh);
   B.push(newBuyer({name:'Kunal Bhatia',business:'Bhatia Mobile Hub',ph:'9819044321',location:'Mumbai',products:[{brand:'Nothing',model:'Phone (3)',category:'Phone',qty:'30'}],source:'WhatsApp group',owner:'amit',addedAt:dA(1,16,40)}));
-  B.push(newBuyer({name:'Sahil Merchant',ph:'9879077110',location:'Surat',products:[{brand:'Samsung',model:'Galaxy Buds 3 Pro',category:'Audio',qty:'50'}],source:'Market visit',owner:'priya',addedAt:dA(3,12,5)}));
-  B.push(newBuyer({name:'Ankit Sanghvi',ph:'9824566778',location:'Rajkot',products:[{brand:'Samsung',model:'Galaxy Buds 3 Pro',category:'Audio',qty:'25'}],source:'Referral',owner:'sneha',addedAt:dA(0,10,15)}));
+  B.push(newBuyer({name:'Sahil Merchant',ph:'9833077110',location:'Mumbai',products:[{brand:'Samsung',model:'Galaxy Buds 3 Pro',category:'Audio',qty:'50'}],source:'Market visit',owner:'priya',addedAt:dA(3,12,5)}));
+  B.push(newBuyer({name:'Ankit Bansal',ph:'9871566778',location:'Noida',products:[{brand:'Samsung',model:'Galaxy Buds 3 Pro',category:'Audio',qty:'25'}],source:'Referral',owner:'sneha',addedAt:dA(0,10,15)}));
   // generated history so KPIs look like a working month
   const r=rng(7);
-  const FN=['Bhavesh','Chirag','Darshan','Firoz','Gaurav','Hemant','Irfan','Jay','Kalpesh','Lalit','Mihir','Nilesh','Omkar','Pratik','Sagar','Tushar','Umesh','Viral','Yash','Zubin','Asif','Bhargav','Chetan','Dhaval','Faisal','Girish','Jatin','Manish','Paras','Sameer'];
-  const LN=['Shah','Patel','Mehta','Desai','Trivedi','Bhatt','Parmar','Solanki','Modi','Kothari','Jain','Agarwal','Sheikh','Khan','Rana','Thakkar','Vyas','Chauhan','Gandhi','Dave'];
-  const CT=[['Surat'],['Ahmedabad'],['Vadodara'],['Rajkot'],['Mumbai'],['Pune'],['Delhi'],['Jaipur'],['Indore'],['Hyderabad'],['Dubai, UAE',1],['Muscat, Oman',1],['Surat'],['Ahmedabad'],['Mumbai']];
+  const FN=['Aakash','Abhishek','Ajay','Aman','Ankur','Arjun','Ashish','Danish','Faisal','Gaurav','Harpreet','Irfan','Karan','Lalit','Manish','Mohit','Naveen','Nitin','Omkar','Pankaj','Prateek','Rajat','Sachin','Sameer','Sandeep','Tushar','Varun','Vikas','Yash','Zubin'];
+  const LN=['Sharma','Gupta','Verma','Agarwal','Malhotra','Kapoor','Khanna','Arora','Bansal','Jain','Chopra','Sethi','Shaikh','Khan','Patil','Kulkarni','Deshmukh','Pawar','Shetty','Singh'];
+  const CT=[['Delhi'],['Mumbai'],['Noida'],['Gurugram'],['Thane'],['Navi Mumbai'],['Pune'],['Ghaziabad'],['Jaipur'],['Lucknow'],['Dubai, UAE',1],['Muscat, Oman',1],['Delhi'],['Mumbai'],['Faridabad']];
   const BIZ=['Mobiles','Telecom','Electronics','Mobile Point','Traders','Communication'];
   const QTY=['10','15','20','25','30','40','50','60','75','100','150','200'];
   const REM={'Call update':['Called, asked to call back next week','Sent price list on WhatsApp','Not picking up, will try tomorrow'],
@@ -676,7 +678,7 @@ function buildState(){
 }
 const rep=()=>member(S.repId);
 const welcome=m=>`Hi ${m.name.split(' ')[0]}. Send me a new buyer the way you normally would: a typed message, a voice note or a forwarded contact. I will check it and save it.`;
-const EXAMPLE='For example: *Rahul Mehta, Surat, 98250 12345, 20 iPhone 16, met at expo*';
+const EXAMPLE='For example: *Rahul Khanna, Delhi, 98110 12345, 20 iPhone 16, met at expo*';
 function freshChat(m,t){ const c=[{sys:`Chatting as ${m.name}`}]; if(m.bot) c.push({from:'bot',text:welcome(m),t}); return c; }
 function resetChat(){
   const r=rep(); S.epoch[r.id]=(S.epoch[r.id]||0)+1; S.pending[r.id]=0; S['cursor_'+r.id]=0;
@@ -699,7 +701,7 @@ function fmtText(s){ const e=String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function bubbleHTML(m){
   if(m.kind==='voice'){ const bars=Array.from({length:26},(_,i)=>`<b style="height:${4+Math.round(Math.abs(Math.sin(i*1.7+m.dur.length))*16)}px"></b>`).join('');
     return `<div class="voice"><span class="play"><svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0l10 6-10 6z"/></svg></span><span class="wave">${bars}</span><span class="mono" style="font-size:11px">${m.dur}</span></div>`; }
-  if(m.kind==='photo') return `<div class="card-photo"><strong>Hardik Shah</strong><span>Shah Mobile Gallery</span><span>+91 98795 11223 · Rajkot</span></div><div style="margin-top:4px">Visiting card</div>`;
+  if(m.kind==='photo') return `<div class="card-photo"><strong>Varun Kapoor</strong><span>Kapoor Mobile Gallery</span><span>+91 98195 11223 · Mumbai</span></div><div style="margin-top:4px">Visiting card</div>`;
   if(m.kind==='contact') return `<div class="contact"><span class="av">${initials(CONTACT.name)}</span><div><b>${CONTACT.name}</b><div style="font-size:12px;opacity:.75">${CONTACT.company}</div><div class="mono" style="font-size:12px">${fmtIn(CONTACT.phone)}</div></div></div><div class="contact-foot">Forwarded contact</div>`;
   if(m.kind==='doc') return `<div class="doc"><span class="ic">PDF</span><div><b>buyers_list.pdf</b><div style="font-size:12px;opacity:.7">2 pages · 840 KB</div></div></div>`;
   return fmtText(m.text);
@@ -859,7 +861,7 @@ function answer(d,text){
   switch(field){
     case 'phone':
       if(!p.phone){ if(p.phoneBad) return ask(d,d.step,`The number *${p.phoneBad.raw}* has ${p.phoneBad.len} digits. Please send all 10 digits.`);
-        return ask(d,d.step,'Please send the phone number as digits, for example 98250 12345.'); }
+        return ask(d,d.step,'Please send the phone number as digits, for example 98110 12345.'); }
       Object.assign(L,{phone:p.phone,phoneKey:p.phoneKey,phoneDigits:p.phoneDigits,fake:p.fake,phoneBad:null}); d.dupDone=false; d.ok.fake=false; break;
     case 'name': { const n=extractName(' '+low(text).replace(/[^a-z\s'.-]/g,' ')+' ')||titleCase(clean(text)); if(!n) return ask(d,d.step,"Please send the buyer's name in letters."); L.name=n; break; }
     case 'location': L.location=p.location||titleCase(clean(text)); L.overseas=p.overseas; L.locAlias=p.locAlias; break;
@@ -919,46 +921,46 @@ function renderSaved(){}
 /* ---------- scenarios ---------- */
 const SCEN=[
  {g:'How the lead arrives',items:[
-  {t:'Typed, everything included',c:'Reads every detail and shows one summary to save.',steps:[{s:'Jignesh Patel, Patel Telecom, Ahmedabad, 9824512345, wants 50 pcs iPhone 16 Pro, met at the Gandhinagar expo. Pays cash on delivery. GST 24AABCP1234C1Z5'},{tap:'Save'}]},
+  {t:'Typed, everything included',c:'Reads every detail and shows one summary to save.',steps:[{s:'Manish Agarwal, Agarwal Telecom, Mumbai, 9820512345, wants 50 pcs iPhone 16 Pro, met at the Goregaon expo. Pays cash on delivery. GST 27AABCA1234C1Z5'},{tap:'Save'}]},
   {t:'Voice note',c:'Repeats what it heard, then the summary.',steps:[{voice:0},{tap:'Save'}]},
-  {t:'Hindi and Gujarati mixed',c:'Understands it and writes the details in English.',steps:[{s:'Surat se Paresh bhai ka lead, 9825098250, Garmin Forerunner 265 ke 20 piece chahiye, expo me mile the, payment advance dega'},{tap:'Save'}]},
+  {t:'Hindi and English mixed',c:'Understands it and writes the details in English.',steps:[{s:'Delhi se Rajesh Sharma ji ka lead, 9811098250, Garmin Forerunner 265 ke 20 piece chahiye, expo me mile the, payment advance dega'},{tap:'Save'}]},
   {t:'Voice note in Hindi',c:'Transcribes, translates the remark, saves in English.',steps:[{voice:1},{tap:'Save'}]},
-  {t:'Forwarded contact',tag:'New',c:'Takes name, business and phone from the contact, asks for the rest.',steps:[{att:'contact'},{r:'Rajkot'},{r:'samsung'},{r:'Galaxy S25 Ultra'},{r:'40'},{tap:'Referral'},{tap:'Save'}]},
+  {t:'Forwarded contact',tag:'New',c:'Takes name, business and phone from the contact, asks for the rest.',steps:[{att:'contact'},{r:'Thane'},{r:'samsung'},{r:'Galaxy S25 Ultra'},{r:'40'},{tap:'Referral'},{tap:'Save'}]},
   {t:'Details over several messages',c:'Asks one short question at a time.',steps:[{s:'Vikram Singh, Jaipur'},{r:'98290 11223'},{r:'apple'},{r:'iPhone 16 Pro'},{r:'35'},{tap:'Exhibition'},{tap:'Save'}]},
-  {t:'Two leads in one message',c:'Checks each lead with Save, Edit or Skip.',steps:[{s:'1. Anil Shah Rajkot 9879012345 Galaxy S25 30 pcs IndiaMART\n2. Hitesh Jain Mumbai 9820456789 OnePlus 13 25 pcs walk-in'},{tap:'Save'},{tap:'Save'}]},
+  {t:'Two leads in one message',c:'Checks each lead with Save, Edit or Skip.',steps:[{s:'1. Anil Sethi Delhi 9810723456 Galaxy S25 30 pcs IndiaMART\n2. Hitesh Jain Mumbai 9820456789 OnePlus 13 25 pcs walk-in'},{tap:'Save'},{tap:'Save'}]},
   {t:'Voice note too unclear',c:'Asks to record again or type it.',steps:[{voice:2},{tap:'Type it'}]},
   {t:'Visiting card photo',tag:'Phase 2',c:'Says photo reading is coming and asks to type or forward the contact.',steps:[{att:'photo'}]},
   {t:'File the bot can\'t read',c:'Asks the rep to type the details.',steps:[{att:'doc'}]}]},
  {g:'Something is missing',items:[
   {t:'Phone missing',c:'Nothing is saved without a phone number.',steps:[{s:'Manoj Verma Indore wants 40 Apple Watch Series 10, referred by Deepak Soni'},{r:'98760 12345'},{tap:'Save'}]},
-  {t:'Phone missing, rep forwards contact',tag:'New',c:'A forwarded contact can answer the phone question.',steps:[{s:'Hardik from Rajkot wants 25 Galaxy S25 Ultra, exhibition'},{att:'contact'},{tap:'Save'}]},
-  {t:'Location missing',c:'Asks for city, country or region. Baroda is saved as Vadodara.',steps:[{s:'Sanjay Rana 9898123456 Galaxy A55 100 pcs exhibition'},{r:'Baroda'},{tap:'Save'}]},
+  {t:'Phone missing, rep forwards contact',tag:'New',c:'A forwarded contact can answer the phone question.',steps:[{s:'Varun from Mumbai wants 25 Galaxy S25 Ultra, exhibition'},{att:'contact'},{tap:'Save'}]},
+  {t:'Location missing',c:'Asks for city, country or region. Gurgaon is saved as Gurugram.',steps:[{s:'Sanjay Rana 9818123456 Galaxy A55 100 pcs exhibition'},{r:'Gurgaon'},{tap:'Save'}]},
   {t:'Only "watches", no brand',c:'Asks for the brand. The rep types it, even misspelt, and the bot matches it.',steps:[{s:'Rakesh Gupta Delhi 9811223344 wants watches 30 pcs walk-in'},{r:'garmn'},{r:'venu 3'},{tap:'Save'}]}]},
  {g:'Something is wrong',items:[
-  {t:'Phone has 9 digits',c:'Asks for all 10 digits.',steps:[{s:'Ravi Kumar Pune 982501234 iPhone 16 20 pcs instagram'},{r:'98250 12340'},{tap:'Save'}]},
+  {t:'Phone has 9 digits',c:'Asks for all 10 digits.',steps:[{s:'Ravi Kumar Pune 981101234 iPhone 16 20 pcs instagram'},{r:'98110 12340'},{tap:'Save'}]},
   {t:'Quantity is "lots"',c:'Asks for a number.',steps:[{s:'Ajay Nair Chennai 9840012345 wants lots of Pixel 9, cold call'},{r:'60'},{tap:'Save'}]},
-  {t:'Fake-looking number',c:'Asks the rep to check it.',steps:[{s:'Mukesh Jain Surat 1234567890 iPhone 15 10 pcs walk-in'},{tap:'Change number'},{r:'98250 44321'},{tap:'Save'}]},
-  {t:'Rep\'s own number',c:'Rejects it and asks for the buyer\'s number.',steps:[{s:'Tarun Shah Surat 9825177001 Galaxy S25 Ultra 20 pcs exhibition'},{r:'98250 12399'},{tap:'Save'}]},
+  {t:'Fake-looking number',c:'Asks the rep to check it.',steps:[{s:'Mukesh Jain Noida 1234567890 iPhone 15 10 pcs walk-in'},{tap:'Change number'},{r:'98110 44321'},{tap:'Save'}]},
+  {t:'Rep\'s own number',c:'Rejects it and asks for the buyer\'s number.',steps:[{s:'Tarun Bhatia Delhi 9811177001 Galaxy S25 Ultra 20 pcs exhibition'},{r:'98110 12399'},{tap:'Save'}]},
   {t:'Misspelt model, old city name',c:'Suggests the right model and saves Bombay as Mumbai.',steps:[{s:'Yusuf Khan, Bombay, 9833012345, Forerunnar 265, 25 pcs, exhibition'},{tap:'Yes'},{tap:'Save'}]}]},
  {g:'Buyer already exists',items:[
-  {t:'Same number, new product',c:'Offers to add the new product to the profile.',steps:[{s:'Rahul Mehta Surat +91 98250-12345 wants 30 Galaxy S25 Ultra'},{tap:'Add these products'}]},
-  {t:'Same number, nothing new',c:'Says who saved it and when. Nothing added.',steps:[{s:'Rahul Mehta Surat 9825012345 iPhone 16 40 pcs exhibition'}]},
-  {t:'Same name, different number',c:'Saves as a new buyer, with a warning.',steps:[{s:'Rahul Mehta, Surat, 9909912345, iPhone 16 Pro 20 pcs, walk-in'},{tap:'Save'}]},
-  {t:'Buyer opted out',c:'Adds nothing.',steps:[{s:'Sunil Patel Rajkot 9898011122 Galaxy A55 50 pcs market visit'}]},
-  {t:'Buyer was archived',c:'Offers to bring them back.',steps:[{s:'Kiran Desai Ahmedabad 9724066778 Redmi Note 14 150 pcs market visit'},{tap:'Bring back'}]},
-  {t:'Another rep added it minutes ago',c:'Says who saved it. Nothing added.',steps:[{setup:'tworeps'},{s:'Harsh Vora Surat 9879033221 iPhone 16 25 pcs exhibition'}]}]},
+  {t:'Same number, new product',c:'Offers to add the new product to the profile.',steps:[{s:'Rahul Khanna Delhi +91 98110-12345 wants 30 Galaxy S25 Ultra'},{tap:'Add these products'}]},
+  {t:'Same number, nothing new',c:'Says who saved it and when. Nothing added.',steps:[{s:'Rahul Khanna Delhi 9811012345 iPhone 16 40 pcs exhibition'}]},
+  {t:'Same name, different number',c:'Saves as a new buyer, with a warning.',steps:[{s:'Rahul Khanna, Delhi, 9811912345, iPhone 16 Pro 20 pcs, walk-in'},{tap:'Save'}]},
+  {t:'Buyer opted out',c:'Adds nothing.',steps:[{s:'Sunil Arora Gurugram 9818011122 Galaxy A55 50 pcs market visit'}]},
+  {t:'Buyer was archived',c:'Offers to bring them back.',steps:[{s:'Kiran Desai Navi Mumbai 9867066778 Redmi Note 14 150 pcs market visit'},{tap:'Bring back'}]},
+  {t:'Another rep added it minutes ago',c:'Says who saved it. Nothing added.',steps:[{setup:'tworeps'},{s:'Harsh Kapoor Mumbai 9833033221 iPhone 16 25 pcs exhibition'}]}]},
  {g:'Special buyers',items:[
   {t:'Overseas buyer',c:'Accepts a country and a foreign number.',steps:[{s:'Ahmed Al Mansoori, Dubai, +971 55 987 6543, iPhone 16 Pro Max 200 pcs, referral from Farhan Qureshi, ships to Jebel Ali, pays in USD'},{tap:'Save'}]},
-  {t:'Shopper, not a trader',c:'Offers to save with a retail tag.',steps:[{s:'Neha Shah Ahmedabad 9925012345 wants 1 iPhone 16 for personal use, walk-in'},{tap:'Yes, retail'},{tap:'Save'}]},
+  {t:'Shopper, not a trader',c:'Offers to save with a retail tag.',steps:[{s:'Neha Bajaj Delhi 9871012345 wants 1 iPhone 16 for personal use, walk-in'},{tap:'Yes, retail'},{tap:'Save'}]},
   {t:'Someone else\'s number',c:'Saves it with a note on whose number it is.',steps:[{s:'Imran Sheikh, Hyderabad, this is his partner\'s number 9849012345, Galaxy S25 50 pcs, referral'},{tap:'Save'}]},
-  {t:'Two numbers given',c:'Saves the first as main, the second as alternate.',steps:[{s:'Bharat Gohil Bhavnagar 9824011111 / 9824022222 Fenix 8 10 pcs market visit'},{tap:'Save'}]}]},
+  {t:'Two numbers given',c:'Saves the first as main, the second as alternate.',steps:[{s:'Bharat Pawar Thane 9820011111 / 9820022222 Fenix 8 10 pcs market visit'},{tap:'Save'}]}]},
  {g:'Rep or system problems',items:[
-  {t:'Number not approved',c:'Refuses and names the admin. Approve Rohit in Team to fix it.',steps:[{as:'rohit'},{s:'Kunal Shah Mumbai 9820111222 iPhone 16 10 pcs walk-in'}]},
-  {t:'Same message sent twice',c:'Ignores the second one.',steps:[{s:'Pooja Mehta Vadodara 9909055667 Galaxy Watch 7 30 pcs instagram'},{s:'Pooja Mehta Vadodara 9909055667 Galaxy Watch 7 30 pcs instagram'}]},
+  {t:'Number not approved',c:'Refuses and names the admin. Approve Rohit in Team to fix it.',steps:[{as:'rohit'},{s:'Kunal Sethi Mumbai 9820111222 iPhone 16 10 pcs walk-in'}]},
+  {t:'Same message sent twice',c:'Ignores the second one.',steps:[{s:'Pooja Malhotra Noida 9810055667 Galaxy Watch 7 30 pcs instagram'},{s:'Pooja Malhotra Noida 9810055667 Galaxy Watch 7 30 pcs instagram'}]},
   {t:'Rep taps Save twice',c:'Saves once.',steps:[{s:'Arjun Rao Pune 9881234567 Pixel 9 Pro 20 pcs instagram'},{tap:'Save'},{tap:'Save'}]},
   {t:'Rep stops halfway',c:'Clears the draft after 30 minutes.',steps:[{s:'Vikram Singh, Jaipur'},{skip:1}]},
-  {t:'System slow or down',c:'Confirms receipt first, then confirms the save.',steps:[{slow:1},{s:'Nisha Kapoor Vadodara 9879066554 Galaxy Z Fold 6 15 pcs WhatsApp group'},{tap:'Save'}]},
-  {t:'Edit before saving',c:'Lets the rep change one field.',steps:[{s:'Dev Mehta Surat 9898044556 iPhone 16 Pro Max 30 pcs exhibition'},{tap:'Edit'},{tap:'Quantity'},{r:'45'},{tap:'Save'}]},
+  {t:'System slow or down',c:'Confirms receipt first, then confirms the save.',steps:[{slow:1},{s:'Nisha Kapoor Thane 9819066554 Galaxy Z Fold 6 15 pcs WhatsApp group'},{tap:'Save'}]},
+  {t:'Edit before saving',c:'Lets the rep change one field.',steps:[{s:'Dev Chopra Delhi 9899044556 iPhone 16 Pro Max 30 pcs exhibition'},{tap:'Edit'},{tap:'Quantity'},{r:'45'},{tap:'Save'}]},
   {t:'Rep just says hi',c:'Greets back and explains what to send, with an example.',steps:[{s:'hii'}]},
   {t:'Says hi in the middle of a lead',c:'Reminds the rep which buyer is being added.',steps:[{s:'Vikram Singh, Jaipur'},{s:'hello'}]},
   {t:'Message with no buyer details',c:'Asks for the details instead of saving junk.',steps:[{s:'how are you'}]},
@@ -966,17 +968,17 @@ const SCEN=[
   {t:'Rep cancels',c:'Nothing is saved.',steps:[{s:'Om Prakash Indore 9826012345 Galaxy A55 40 pcs cold call'},{tap:'Cancel'}]}]}];
 
 function setupTworeps(){
-  if(S.botBuyers.find(b=>b.phoneKey==='919879033221')) return;
+  if(S.botBuyers.find(b=>b.phoneKey==='919833033221')) return;
   const t=now()-2*60000;
-  const h=newBuyer({name:'Harsh Vora',ph:'9879033221',location:'Surat',products:[{brand:'Apple',model:'iPhone 16',category:'Phone',qty:'25'}],source:'Exhibition',owner:'priya',addedAt:t});
+  const h=newBuyer({name:'Harsh Kapoor',ph:'9833033221',location:'Mumbai',products:[{brand:'Apple',model:'iPhone 16',category:'Phone',qty:'25'}],source:'Exhibition',owner:'priya',addedAt:t});
   S.botBuyers.unshift(h);
-  S.chats.priya.push({from:'rep',text:'Harsh Vora Surat 9879033221 iPhone 16 25 pcs exhibition',t},{from:'bot',text:`Saved ✓ *Harsh Vora*, Surat. Buyer #${h.id}.`,t});
+  S.chats.priya.push({from:'rep',text:'Harsh Kapoor Mumbai 9833033221 iPhone 16 25 pcs exhibition',t},{from:'bot',text:`Saved ✓ *Harsh Kapoor*, Mumbai. Buyer #${h.id}.`,t});
 }
 function useRep(id){ S.repId=id; if(!S.sync) renderChat(); }
 function tapLabel(label){ const c=S.chats[S.repId]; for(let i=c.length-1;i>=0;i--){ const m=c[i]; if(m.buttons){ const j=m.buttons.findIndex(b=>b.label===label); if(j>=0){ tapButton(m,j,true); return true; } } } return false; }
 function doStep(st){
   if(st.as) useRep(st.as);
-  else if(st.setup==='tworeps'){ setupTworeps(); sys('Priya saved Harsh Vora 2 minutes ago'); }
+  else if(st.setup==='tworeps'){ setupTworeps(); sys('Priya saved Harsh Kapoor 2 minutes ago'); }
   else if(st.slow){ S.slow=true; }
   else if(st.s!=null||st.r!=null) onText(st.s!=null?st.s:st.r);
   else if(st.voice!=null) onVoice(VOICES[st.voice]);
@@ -1310,22 +1312,22 @@ function dealModal(b){
 function buyerFormModal(){
   let warned=false;
   modal(`${mhead('Add buyer')}<div class="form">
-    <label class="field">Name *<input id="f-name" placeholder="Rahul Mehta"></label><label class="field">Business<input id="f-biz" placeholder="Mehta Mobiles"></label>
-    <label class="field">Phone *<input id="f-phone" inputmode="tel" placeholder="98250 12345 or +971…"></label><label class="field">Alternate phone<input id="f-alt" inputmode="tel"></label>
-    <label class="field">City, country or region *<input id="f-loc" placeholder="Surat"></label><label class="field">Source<select id="f-src">${SOURCES.map(s=>`<option>${s}</option>`).join('')}</select></label>
+    <label class="field">Name *<input id="f-name" placeholder="Rahul Khanna"></label><label class="field">Business<input id="f-biz" placeholder="Khanna Mobiles"></label>
+    <label class="field">Phone *<input id="f-phone" inputmode="tel" placeholder="98110 12345 or +971…"></label><label class="field">Alternate phone<input id="f-alt" inputmode="tel"></label>
+    <label class="field">City, country or region *<input id="f-loc" placeholder="Delhi"></label><label class="field">Source<select id="f-src">${SOURCES.map(s=>`<option>${s}</option>`).join('')}</select></label>
     <label class="field">Product<select id="f-model"><option value="">Choose</option>${MODELS.map(m=>`<option>${m.name}</option>`).join('')}</select></label><label class="field">Quantity<input id="f-qty" placeholder="50 or 50-100"></label>
     <label class="field">GST number<input id="f-gst" placeholder="Optional"></label>${member(S.user).role==='admin'?`<label class="field">Owner<select id="f-owner">${S.team.filter(m=>m.role==='rep').map(m=>`<option value="${m.id}">${hx(m.name)}</option>`).join('')}</select></label>`:'<span></span>'}
     <label class="field full">First remark<textarea id="f-rem" rows="2" placeholder="Pays cash on delivery"></textarea></label>
     <label class="field check full"><input type="checkbox" id="f-retail"> Shopper buying for personal use (retail)</label></div>
     <div class="actions"><button class="primary" type="submit">Save buyer</button><button class="ghost" type="button" data-close>Cancel</button></div>`,f=>{
       if(!val(f,'f-name')) return "Enter the buyer's name.";
-      const ph=findPhones(val(f,'f-phone'))[0]; if(!ph) return 'Enter the phone number as digits, for example 98250 12345.';
+      const ph=findPhones(val(f,'f-phone'))[0]; if(!ph) return 'Enter the phone number as digits, for example 98110 12345.';
       if(ph.kind==='bad') return `The phone number has ${ph.len} digits. Enter all 10 digits.`;
       const info=phoneInfo(ph); if(info.fake) return `${info.phone} doesn't look like a real number. Check it and try again.`;
       if(S.team.some(m=>m.phone===info.phoneDigits)) return "That is a team member's number. Enter the buyer's number.";
       const ex=S.buyers.find(b=>b.phoneKey===info.phoneKey||b.altKey===info.phoneKey); if(ex) return `Already saved as ${ex.name}, ${ex.location} (buyer #${ex.id}, ${statusOf(ex)[1].toLowerCase()}).`;
       if(!val(f,'f-loc')) return 'Enter a city, country or region.';
-      const gst=val(f,'f-gst'); if(gst&&!/^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/i.test(gst)) return 'The GST number should be 15 characters, like 24AABCP1234C1Z5.';
+      const gst=val(f,'f-gst'); if(gst&&!/^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]$/i.test(gst)) return 'The GST number should be 15 characters, like 07AABCK1234C1Z5.';
       const name=titleCase(val(f,'f-name')); const same=S.buyers.find(b=>low(b.name)===low(name));
       if(same&&!warned){ warned=true; return {warn:true,text:`Another ${same.name} is saved in ${same.location}. Press Save again to add this as a new buyer.`}; }
       const loc=findLocation(low(val(f,'f-loc'))); const m=MODELS.find(x=>x.name===val(f,'f-model'));
@@ -1341,7 +1343,7 @@ function buyerFormModal(){
 function memberModal(m){
   const isNew=!m;
   modal(`${mhead(isNew?'Add team member':'Edit '+hx(m.name))}<div class="form">
-    <label class="field">Name *<input id="m-name" value="${isNew?'':hx(m.name)}" placeholder="Sneha Joshi"></label>
+    <label class="field">Name *<input id="m-name" value="${isNew?'':hx(m.name)}" placeholder="Sneha Kulkarni"></label>
     <label class="field">WhatsApp number *<input id="m-phone" inputmode="tel" value="${isNew?'':m.phone}" placeholder="97120 44003"></label>
     <label class="field">Role<select id="m-role"><option value="rep">Sales rep</option><option value="admin" ${!isNew&&m.role==='admin'?'selected':''}>Admin</option></select></label>
     <label class="field">Monthly lead target<input id="m-target" inputmode="numeric" value="${isNew?40:m.target||''}"></label>
