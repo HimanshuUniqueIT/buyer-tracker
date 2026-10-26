@@ -463,6 +463,23 @@ function findModel(t){
       if(dist>=1 && dist<=2 && (!sug || dist<sug.dist)) sug={model:m,key:k,typed:s,dist}; } }
   return sug ? {exact:false, ...sug} : null;
 }
+// Every exact model in the text with the quantity written next to it, for a buyer who wants several products at once.
+const ITEM_SEP=/\s(?:,|and|aur|or|ya|also|plus|\+|\|)\s/;
+function findModels(t){
+  const hits=[];
+  for(const m of MODELS) for(const k of m.keys){ const re=new RegExp('(^|[^a-z0-9])('+esc(k)+')(?![a-z0-9])','g'); let r;
+    while((r=re.exec(t))){ const s=r.index+r[1].length; hits.push({model:m,key:k,s,e:s+k.length}); } }
+  hits.sort((a,b)=>b.key.length-a.key.length);
+  const pick=[]; for(const h of hits) if(!pick.some(p=>h.s<p.e&&p.s<h.e)) pick.push(h);
+  pick.sort((a,b)=>a.s-b.s);
+  const out=[]; for(const h of pick) if(!out.some(o=>o.model===h.model)) out.push(h);
+  out.forEach((h,i)=>{
+    const before=t.slice(i?out[i-1].e:0,h.s).split(ITEM_SEP).pop(), after=t.slice(h.e,i+1<out.length?out[i+1].s:t.length).split(ITEM_SEP)[0];
+    const b=/(\d+(?:\s*(?:-|to)\s*\d+)?)\s*x?\s*(?:pcs|pc|pieces?|piece|units?|nos|nang|pis|sets?)?\s*(?:of\s*)?$/.exec(before);
+    const a=findQty(after)||((/^\s*(\d+(?:\s*(?:-|to)\s*\d+)?)\b/.exec(after)||[])[1]);
+    const q=(b&&b[1])||a; h.qty=q?q.replace(/\s*(?:-|to)\s*/,'-'):null; });
+  return out;
+}
 const QTY = '(\\d+(?:\\s*(?:-|to)\\s*\\d+)?)';
 function findQty(t){
   const pats=[ new RegExp('\\b(?:qty|quantity|qnty)\\s*[:,\\-]?\\s*'+QTY),
@@ -508,13 +525,17 @@ function parseLead(text){
   if(bizM){ const words=bizM[1].trim().split(' ').filter(x=>!STOP.has(x)||/mobiles?|electronics|telecom|traders|trading/.test(x)); if(words.length>1){ L.business=titleCase(words.join(' ')); w=w.replace(bizM[1],' , '); } }
   const loc = findLocation(w) || (labCity ? {location:titleCase(labCity[1]), overseas:false, key:null, alias:null} : null);
   if(loc){ L.location=loc.location; L.overseas=loc.overseas; L.locAlias=loc.alias; }
-  const mm=findModel(w);
+  const many=findModels(w);
+  if(many.length>1){ L.items=many.map(x=>({brand:x.model.brand,model:x.model.name,category:x.model.cat,qty:x.qty}));
+    Object.assign(L,{brand:L.items[0].brand,model:L.items[0].model,category:L.items[0].category});
+    for(const x of many) w=w.replace(new RegExp('(^|[^a-z0-9])'+esc(x.key)+'(?![a-z0-9])'),'$1 | '); }
+  const mm=L.items?null:findModel(w);
   if(mm && mm.exact){ L.model=mm.model.name; L.brand=mm.model.brand; L.category=mm.model.cat; w=w.replace(new RegExp('(^|[^a-z0-9])'+esc(mm.key)+'(?![a-z0-9])'),'$1 | '); }
   else if(mm){ L.modelSuggest={name:mm.model.name,brand:mm.model.brand,cat:mm.model.cat,typed:mm.typed}; w=w.replace(mm.typed,' | '); }
   if(!L.brand) for(const [re,b] of BRAND_RX) if(re.test(w)){ L.brand=b; break; }
   if(!L.category){ if(/\b(phones?|mobiles?|smartphones?|iphones?)\b/.test(w)) L.category='Phone'; else if(/\b(watch(es)?|ghadi|smartwatch(es)?)\b/.test(w)) L.category='Watch'; else if(/\b(earbuds|airpods|headphones)\b/.test(w)) L.category='Audio'; }
-  L.qty=findQty(w);
-  if(!L.qty){ const v=/\b(lots|lot of|many|bulk|bahut|zyada|ghana|plenty|several)\b/.exec(w); if(v) L.qtyVague=v[1]; }
+  L.qty=L.items?L.items[0].qty:findQty(w);
+  if(!L.qty && !L.items){ const v=/\b(lots|lot of|many|bulk|bahut|zyada|ghana|plenty|several)\b/.exec(w); if(v) L.qtyVague=v[1]; }
   L.source = (labSource && matchSource(labSource[1])) || matchSource(w);
   const refM=/\b(?:referred by|reference of|reference from|referral from|ref by|ref from)\s+([a-z]+(?:\s+[a-z]+)?)/.exec(w);
   if(refM){ const r=refM[1].split(' ').filter(x=>!STOP.has(x)); if(r.length) L.referrer=titleCase(r.join(' ')); }
@@ -796,6 +817,7 @@ function advance(d){
   if(!L.location) return ask(d,'location',`Which city, country or region is *${L.name}* in?`);
   if(!L.brand) return ask(d,'brand',L.category?`Which brand of ${low(L.category)}? Type the name, for example Garmin.`:'Which brand does the buyer want? Type the name, for example Samsung.');
   if(!L.model && !L.modelSkipped && L.brand!=='Any') return ask(d,'model',`Which ${L.brand} model? Tap Skip if not sure.`,[btn('Skip',()=>{L.modelSkipped=true;advance(d);})]);
+  if(L.items){ const it=L.items.find(x=>!x.qty); if(it) return ask(d,'itemqty',`How many *${prodLabel(it)}* does ${L.name} want?`); }
   if(!L.qty) return ask(d,'quantity','How many pieces?');
   if(!L.source) return ask(d,'source','Where did this lead come from?',SOURCES.map(s=>btn(s,()=>{L.source=s;advance(d);})));
   summary(d);
@@ -804,18 +826,21 @@ function dupCheck(d){
   const L=d.lead, r=rep();
   const b=S.botBuyers.find(x=>x.phoneKey===L.phoneKey||x.altKey===L.phoneKey||(L.altKey&&x.phoneKey===L.altKey));
   if(!b) return false;
-  const prod=leadProduct(L); const isNew=prod&&!b.products.some(p=>sameProduct(p,prod));
+  const prods=L.items||(leadProduct(L)?[leadProduct(L)]:[]);
+  const fresh=prods.filter(p=>!b.products.some(x=>sameProduct(x,p))); const isNew=fresh.length>0;
+  const freshLabel=fresh.map(prodLabel).join(', ');
   const ownerName=member(b.owner)?member(b.owner).name:'the team';
   if(b.status==='optedout'){ say(`*${b.name}*, ${b.location} asked not to be contacted. They opted out on ${fmtDate(b.statusDate)}.\nNothing added.`); endLead(d); return true; }
   if(b.status==='archived'){ ask(d,'archived',`*${b.name}*, ${b.location} was archived on ${fmtDate(b.statusDate)}. Bring them back?`,[
-      btn('Bring back',()=>{ b.status='active'; b.statusDate=now(); ev(b,'status',r.id,now(),{text:'Brought back from archive via WhatsApp'}); let extra=''; if(isNew){ addProd(b,prod); extra=` and *${prodLabel(prod)}* added`; }
+      btn('Bring back',()=>{ b.status='active'; b.statusDate=now(); ev(b,'status',r.id,now(),{text:'Brought back from archive via WhatsApp'}); let extra=''; if(isNew){ fresh.forEach(p=>addProd(b,p)); extra=` and *${freshLabel}* added`; }
         say(`*${b.name}* is active again${extra}.`); savedNote(b,'Brought back'); endLead(d); }),
       btn('Leave archived',()=>{ say('OK. Nothing changed.'); endLead(d); })]); return true; }
   const created=b.history.find(e=>e.type==='created');
   if(b.owner!==r.id && now()-created.t<15*60000){ say(`*${ownerName}* saved *${b.name}*, ${b.location} ${ago(created.t)}.\nNothing added.`); endLead(d); return true; }
   const head=`Already saved as *${b.name}*, ${b.location}.\nAdded by ${ownerName} on ${fmtDate(created.t)} (${b.source}).`;
-  if(isNew){ ask(d,'addprod',`${head}\n\nThis time the buyer wants *${prodLabel(prod)}*. Add it to the profile?`,[
-      btn('Add these products',()=>{ addProd(b,prod); say(`Added *${prodLabel(prod)}* to ${b.name}'s profile.`); savedNote(b,'Product added'); endLead(d); }),
+  if(isNew){ const known=prods.filter(p=>!fresh.includes(p)).map(p=>p.model||prodLabel({...p,qty:null}));
+    ask(d,'addprod',`${head}\n\nThis time the buyer wants *${freshLabel}*.`+(known.length?` ${known.join(', ')} ${known.length>1?'are':'is'} already on the profile.`:'')+` Add ${fresh.length>1?'them':'it'} to the profile?`,[
+      btn('Add these products',()=>{ fresh.forEach(p=>addProd(b,p)); say(`Added *${freshLabel}* to ${b.name}'s profile.`); savedNote(b,fresh.length>1?`${fresh.length} products added`:'Product added'); endLead(d); }),
       btn('Leave it',()=>{ say('OK. Nothing added.'); endLead(d); })]); return true; }
   say(`${head}\nNothing added.`); endLead(d); return true;
 }
@@ -824,7 +849,9 @@ function summary(d){
   const L=d.lead; d.step='summary';
   d.sameName=S.botBuyers.find(b=>b.status!=='optedout'&&low(b.name)===low(L.name)&&b.phoneKey!==L.phoneKey)||null;
   const rows=[['Name',L.name],['Business',L.business],['Phone',L.phone],['Alt phone',L.alt],
-    ['Location',L.location+(L.locAlias?` (you wrote ${L.locAlias.from})`:'')],['Product',prodLabel({...L,qty:null})],['Quantity',L.qty?`${L.qty} ${L.qty==='1'?'pc':'pcs'}`:null],
+    ['Location',L.location+(L.locAlias?` (you wrote ${L.locAlias.from})`:'')],
+    ...(L.items?[['Products',`${L.items.length}\n`+L.items.map(p=>`• ${prodLabel(p)} pcs`).join('\n')],['Total',L.items.every(p=>/^\d+$/.test(p.qty))?`${L.items.reduce((s,p)=>s+ +p.qty,0)} pcs`:null]]
+      :[['Product',prodLabel({...L,qty:null})],['Quantity',L.qty?`${L.qty} ${L.qty==='1'?'pc':'pcs'}`:null]]),
     ['Source',L.source+(L.referrer?`, by ${L.referrer}`:'')],['GST',L.gst],['Note',L.contactNote],['Tag',L.retail?'Retail':null],['Remark',L.remark||null]];
   let t=(d.total>1?`*Lead ${d.n} of ${d.total}.* `:'')+'Please check:\n'+rows.filter(r=>r[1]).map(([k,v])=>`*${k}:* ${v}`).join('\n');
   if(d.sameName) t+=`\n⚠ Another ${d.sameName.name} is saved in ${d.sameName.location} (${d.sameName.phone}). This one will be saved as a new buyer.`;
@@ -842,15 +869,17 @@ function save(d){
 }
 function createBuyer(L,r){
   const b={id:S.nextId++,name:L.name,business:L.business,phone:L.phone,phoneKey:L.phoneKey,alt:L.alt,altKey:L.altKey,location:L.location,overseas:L.overseas,
-    products:[{brand:L.brand,model:L.model,category:L.category,qty:L.qty,date:now(),by:r.id}],source:L.source,referrer:L.referrer,
+    products:(L.items||[{brand:L.brand,model:L.model,category:L.category,qty:L.qty}]).map(p=>({...p,date:now(),by:r.id})),source:L.source,referrer:L.referrer,
     tags:L.retail?['Retail']:[],contactNote:L.contactNote,gst:L.gst,owner:r.id,status:'active',statusDate:null,deals:[],history:[]};
-  ev(b,'created',r.id,now(),{via:L.viaContact?'WhatsApp bot (forwarded contact)':'WhatsApp bot',text:`Added from ${L.source}${L.referrer?' by '+L.referrer:''} · wants ${prodLabel(b.products[0])}`});
+  ev(b,'created',r.id,now(),{via:L.viaContact?'WhatsApp bot (forwarded contact)':'WhatsApp bot',text:`Added from ${L.source}${L.referrer?' by '+L.referrer:''} · wants ${b.products.map(prodLabel).join(', ')}`});
   if(L.remark) ev(b,'remark',r.id,now(),{cat:'General',text:L.remark});
   if(L.contactNote) ev(b,'remark',r.id,now(),{cat:'General',text:L.contactNote});
   S.botBuyers.unshift(b); return b;
 }
 function editPick(d){
-  ask(d,'editpick','What do you want to change?',['Name','Phone','Location','Product','Quantity','Source','Remark'].map(f=>btn(f,()=>{ d.editing=low(f); ask(d,'edit',`Send the new ${low(f)}.`); })));
+  const fields=d.lead.items?['Name','Phone','Location','Products','Source','Remark']:['Name','Phone','Location','Product','Quantity','Source','Remark'];
+  ask(d,'editpick','What do you want to change?',fields.map(f=>btn(f,()=>{ d.editing=low(f);
+    ask(d,'edit',f==='Products'?'Send all the products again with quantities, for example *40 iPhone 16, 25 Galaxy S25*.':`Send the new ${low(f)}.`); })));
 }
 function answer(d,text){
   const L=d.lead, p=parseLead(text);
@@ -877,6 +906,12 @@ function answer(d,text){
       break;
     case 'quantity': { const q=p.qty||((/^\s*(\d+(?:\s*(?:-|to)\s*\d+)?)\s*(pcs|pieces?|nang|units?)?\s*$/i.exec(text)||[])[1]);
       if(!q) return ask(d,d.step,'Please send a number, like 50 or 50-100.'); L.qty=q.replace(/\s*(?:-|to)\s*/,'-'); L.qtyVague=null; L.retail=L.retail||q==='1'; break; }
+    case 'itemqty': { const q=p.qty||((/^\s*(\d+(?:\s*(?:-|to)\s*\d+)?)\s*(pcs|pieces?|nang|units?)?\s*$/i.exec(text)||[])[1]);
+      if(!q) return ask(d,d.step,'Please send a number, like 50 or 50-100.'); L.items.find(x=>!x.qty).qty=q.replace(/\s*(?:-|to)\s*/,'-'); L.qty=L.items[0].qty; break; }
+    case 'products':
+      if(p.items){ L.items=p.items; Object.assign(L,{brand:p.brand,model:p.model,category:p.category,qty:p.qty}); break; }
+      if(p.model){ L.items=null; Object.assign(L,{brand:p.brand,model:p.model,category:p.category,qty:p.qty||L.qty}); break; }
+      return ask(d,d.step,'I could not find the models in that. Send them like *40 iPhone 16, 25 Galaxy S25*.');
     case 'source': L.source=p.source||matchSource(text)||titleCase(clean(text)); if(p.referrer) L.referrer=p.referrer; break;
     case 'remark': L.remark=text.trim(); break;
     default: return say('Please tap one of the buttons above, or type *cancel* to start over.');
@@ -928,6 +963,8 @@ const SCEN=[
   {t:'Forwarded contact',tag:'New',c:'Takes name, business and phone from the contact, asks for the rest.',steps:[{att:'contact'},{r:'Thane'},{r:'samsung'},{r:'Galaxy S25 Ultra'},{r:'40'},{tap:'Referral'},{tap:'Save'}]},
   {t:'Details over several messages',c:'Asks one short question at a time.',steps:[{s:'Vikram Singh, Jaipur'},{r:'98290 11223'},{r:'apple'},{r:'iPhone 16 Pro'},{r:'35'},{tap:'Exhibition'},{tap:'Save'}]},
   {t:'Two leads in one message',c:'Checks each lead with Save, Edit or Skip.',steps:[{s:'1. Anil Sethi Delhi 9810723456 Galaxy S25 30 pcs IndiaMART\n2. Hitesh Jain Mumbai 9820456789 OnePlus 13 25 pcs walk-in'},{tap:'Save'},{tap:'Save'}]},
+  {t:'One buyer, several products',tag:'New',c:'Saves every product with its own quantity on one buyer.',steps:[{s:'Rohan Mehta, Mehta Mobiles, Delhi, 9811234567, wants 40 iPhone 16 Pro, 25 Galaxy S25 Ultra and 10 Apple Watch Ultra 2, met at Pragati Maidan expo'},{tap:'Save'}]},
+  {t:'Several products, one quantity missing',tag:'New',c:'Asks how many only for the product without a number.',steps:[{s:'Mumbai ke Imran Shaikh ka lead, 9820567890, 50 Redmi Note 14 aur OnePlus Nord 4 bhi chahiye, IndiaMART se aaya'},{r:'30'},{tap:'Save'}]},
   {t:'Voice note too unclear',c:'Asks to record again or type it.',steps:[{voice:2},{tap:'Type it'}]},
   {t:'Visiting card photo',tag:'Phase 2',c:'Says photo reading is coming and asks to type or forward the contact.',steps:[{att:'photo'}]},
   {t:'File the bot can\'t read',c:'Asks the rep to type the details.',steps:[{att:'doc'}]}]},
@@ -944,6 +981,7 @@ const SCEN=[
   {t:'Misspelt model, old city name',c:'Suggests the right model and saves Bombay as Mumbai.',steps:[{s:'Yusuf Khan, Bombay, 9833012345, Forerunnar 265, 25 pcs, exhibition'},{tap:'Yes'},{tap:'Save'}]}]},
  {g:'Buyer already exists',items:[
   {t:'Same number, new product',c:'Offers to add the new product to the profile.',steps:[{s:'Rahul Khanna Delhi +91 98110-12345 wants 30 Galaxy S25 Ultra'},{tap:'Add these products'}]},
+  {t:'Same number, several products',tag:'New',c:'Adds only the products that are not already on the profile.',steps:[{s:'Rahul Khanna Delhi 9811012345 wants iPhone 16 40 pcs and 20 AirPods Pro 2'},{tap:'Add these products'}]},
   {t:'Same number, nothing new',c:'Says who saved it and when. Nothing added.',steps:[{s:'Rahul Khanna Delhi 9811012345 iPhone 16 40 pcs exhibition'}]},
   {t:'Same name, different number',c:'Saves as a new buyer, with a warning.',steps:[{s:'Rahul Khanna, Delhi, 9811912345, iPhone 16 Pro 20 pcs, walk-in'},{tap:'Save'}]},
   {t:'Buyer opted out',c:'Adds nothing.',steps:[{s:'Sunil Arora Gurugram 9818011122 Galaxy A55 50 pcs market visit'}]},
