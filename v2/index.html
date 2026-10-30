@@ -54,6 +54,13 @@ h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 #v-bot{gap:16px}
 .bot-grid{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(340px,480px);gap:20px;width:100%;justify-content:center}
 .pane{min-height:0;min-width:0;display:flex;flex-direction:column}
+.newwin{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:1px solid var(--line);border-radius:5px;font-size:12px;text-decoration:none;color:var(--muted);vertical-align:1px;margin-left:4px}
+.newwin:hover{border-color:var(--accent);color:var(--accent)}
+.dline{font-size:12.5px;line-height:1.5;margin:2px 0}
+.dtag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--soft);border:1px solid var(--line);color:var(--ink);margin-right:2px}
+.mtabs{display:flex;flex-wrap:wrap;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;align-self:flex-start}
+.mtabs button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-weight:600;font-size:13px;color:var(--muted)}
+.mtabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
 .subtabs{display:none;gap:3px;margin-bottom:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;align-self:flex-start}
 .hint{color:var(--muted);font-size:12.5px;margin:4px 0 0}
 .scen{overflow-y:auto;padding-right:4px}
@@ -213,7 +220,8 @@ mark{background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:0 2px
 .homebar{display:grid;place-items:center;height:20px;background:var(--chat)}
 .homebar i{width:120px;height:5px;border-radius:999px;background:var(--ink);opacity:.8}
 .menu{bottom:78px}
-#v-dash{flex-direction:column;align-items:center}
+#v-dash{flex-direction:column;padding-block:0}
+#v-dash .screen-body{width:100%;background:var(--bg)}
 .laptop{flex:1;min-height:0;width:100%;max-width:1480px;display:flex;flex-direction:column;align-items:center}
 .lid{position:relative;flex:1;min-height:0;width:calc(100% - 64px);display:flex;background:#151a18;border-radius:20px 20px 0 0;padding:22px 14px 14px;box-shadow:0 0 0 2px #3b4340}
 .lid .cam{position:absolute;top:8px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#39413e}
@@ -334,6 +342,16 @@ a.ghost{text-decoration:none;color:var(--ink);display:inline-flex;align-items:ce
 @media (max-width:760px){ .mrow{grid-template-columns:minmax(0,1fr)} }
 .p-both{background:var(--accent-soft);color:var(--accent)}
 .sitetag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;border:1px solid var(--line);background:var(--soft);color:var(--muted);white-space:nowrap}
+.rqpre{font-size:12px;color:var(--muted)}
+.rqmodel{font-size:16px;font-weight:600;line-height:1.3;color:var(--ink)}
+.rqpart{font-size:12px;font-weight:400;color:var(--muted)}
+.rqbody{margin-top:4px;font-size:12.5px;line-height:1.45;color:var(--muted);max-width:56ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rqbody.full{display:block;color:var(--ink);font-size:13.5px}
+.rqpost{border-left:3px solid var(--accent)}
+.rqwho{font-size:12.5px;white-space:nowrap}
+.rqwho b{font-size:13.5px;font-weight:600}
+.rqwho .mono{margin-top:2px}
+.rqco{display:block;text-align:left;margin-top:4px;font-size:12px}
 .cobadges{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:3px;font-size:12px}
 .chips .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
 .primary.big{padding:10px 18px;font-size:14.5px}
@@ -411,15 +429,7 @@ a.ghost{text-decoration:none;color:var(--ink);display:inline-flex;align-items:ce
 
     <!-- Dashboard -->
     <section class="view" id="v-dash" aria-label="Team dashboard">
-      <div class="laptop">
-        <div class="lid"><span class="cam" aria-hidden="true"></span>
-          <div class="screen">
-            <div class="browserbar" aria-hidden="true"><span class="lights"><i></i><i></i><i></i></span><span class="url">app.buyertracker.in/dashboard</span></div>
-            <div class="screen-body" id="dashRoot"></div>
-          </div>
-        </div>
-        <div class="base" aria-hidden="true"></div>
-      </div>
+      <div class="screen-body" id="dashRoot"></div>
     </section>
   </div>
 </div>
@@ -434,7 +444,7 @@ const esc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;
   for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n];}
 
-const CITY = {mumbai:'Mumbai',bombay:'Mumbai',surat:'Surat',vadodara:'Vadodara',baroda:'Vadodara',ahmedabad:'Ahmedabad',ahmadabad:'Ahmedabad',amdavad:'Ahmedabad',
+const CITY = {'nehru place':'Nehru Place, Delhi','lamington road':'Lamington Road, Mumbai',mumbai:'Mumbai',bombay:'Mumbai',surat:'Surat',vadodara:'Vadodara',baroda:'Vadodara',ahmedabad:'Ahmedabad',ahmadabad:'Ahmedabad',amdavad:'Ahmedabad',
   gandhinagar:'Gandhinagar',rajkot:'Rajkot',bhavnagar:'Bhavnagar',jamnagar:'Jamnagar',delhi:'Delhi','new delhi':'Delhi',bangalore:'Bengaluru',bengaluru:'Bengaluru',
   kolkata:'Kolkata',calcutta:'Kolkata',hyderabad:'Hyderabad',pune:'Pune',poona:'Pune',jaipur:'Jaipur',chennai:'Chennai',madras:'Chennai',indore:'Indore',nagpur:'Nagpur',
   lucknow:'Lucknow',kochi:'Kochi',cochin:'Kochi',noida:'Noida',gurugram:'Gurugram',gurgaon:'Gurugram',ghaziabad:'Ghaziabad',faridabad:'Faridabad',
@@ -457,12 +467,18 @@ const MODELS = [
   ['Garmin','Forerunner 165','Watch'],['Garmin','Forerunner 265','Watch'],['Garmin','Forerunner 965','Watch'],['Garmin','Fenix 8','Watch'],['Garmin','Venu 3','Watch'],['Garmin','Instinct 2','Watch'],['Garmin','Vivoactive 5','Watch'],
   ['OnePlus','OnePlus 13','Phone'],['OnePlus','OnePlus 12','Phone'],['OnePlus','OnePlus Nord 4','Phone'],
   ['Xiaomi','Redmi Note 14','Phone'],['Xiaomi','Redmi Note 13','Phone'],['Xiaomi','Xiaomi 14','Phone'],
-  ['Google','Pixel 9','Phone'],['Google','Pixel 9 Pro','Phone']
-].map(([brand,name,cat])=>{const k=low(name);const keys=[k];
+  ['Google','Pixel 9','Phone'],['Google','Pixel 9 Pro','Phone'],
+  // Computer parts. Graphics cards go by chip (Nvidia, AMD); the board maker (ASUS, MSI) goes in the remark.
+  ['Nvidia','GeForce RTX 5090','Graphics card',['rtx 5090','rtx5090']],['Nvidia','GeForce RTX 5080','Graphics card',['rtx 5080','rtx5080']],
+  ['Nvidia','GeForce RTX 5070 Ti','Graphics card',['rtx 5070 ti','rtx5070ti','5070 ti']],['AMD','Radeon RX 9070 XT','Graphics card',['rx 9070 xt','9070 xt']],
+  ['Samsung','990 Pro 2TB NVMe SSD','SSD',['990 pro','samsung 990 pro']],['WD','Black SN850X 2TB SSD','SSD',['sn850x','wd black']],['Kingston','NV3 1TB NVMe SSD','SSD',['kingston nv3','nv3']],
+  ['Seagate','IronWolf 8TB NAS HDD','Hard drive',['ironwolf']],['Seagate','BarraCuda 4TB HDD','Hard drive',['barracuda']],['WD','Red Plus 6TB HDD','Hard drive',['wd red','red plus']]
+].map(([brand,name,cat,alias])=>{const k=low(name);const keys=[k,...(alias||[])];
   if(k.startsWith('galaxy ')) keys.push(k.slice(7));
   if(k.startsWith('apple watch')) keys.push(k.slice(6));
   if(k.startsWith('oneplus')) keys.push('one plus'+k.slice(7));
-  return {brand,name,cat,keys};});
+  return {brand,name,cat,keys,it:!!alias};});
+const BASE_MODELS=MODELS.filter(m=>!m.it); // sample buyers keep the original phones, watches and audio
 const STOP = new Set(('new lead leads buyer buyers customer client party mr mrs ms shri sir ji bhai ben bhaiya hi hello hey please add save this that the a an is are was ' +
   'and or from in at of for to with by on he she his her him they their them it its wants want wanted needs need needed order requirement looking ' +
   'met got spoke called talked visited call dealer trader shop owner number contact name naam no phone mobile mobiles phones watch watches ghadi smartwatch ' +
@@ -471,7 +487,8 @@ const STOP = new Set(('new lead leads buyer buyers customer client party mr mrs 
   'expo exhibition referral reference referred walk-in walk cold indiamart instagram insta market visit group whatsapp ' +
   'today yesterday tomorrow urgent also only same any brand model city location place source ' +
   'selling sells sell seller supplier stock available ready maal bechna bechne bech raha rahe offering offer per rs price rate sealed seal used refurbished refurb renewed grade open condition second hand budget has have').split(/\s+/));
-['apple','iphone','iphones','samsung','galaxy','garmin','oneplus','xiaomi','redmi','google','pixel','vivo','oppo','realme','fitbit','amazfit','airpods'].forEach(w=>STOP.add(w));
+['apple','iphone','iphones','samsung','galaxy','garmin','oneplus','xiaomi','redmi','google','pixel','vivo','oppo','realme','fitbit','amazfit','airpods',
+  'nvidia','geforce','rtx','amd','radeon','seagate','wd','kingston','crucial','toshiba','ssd','ssds','hdd','hdds','gpu','gpus','graphics','card','cards','nvme','sata','tb','gb'].forEach(w=>STOP.add(w));
 
 const fmtIn = d => `+91 ${d.slice(0,5)} ${d.slice(5)}`;
 const fmtIntl = d => d.startsWith('971') && d.length===12 ? `+971 ${d.slice(3,5)} ${d.slice(5,8)} ${d.slice(8)}` : '+'+d;
@@ -519,7 +536,7 @@ function findLocation(t){
       if(idx>=0 && (!best || idx<best.idx || (idx===best.idx && k.length>best.key.length))) best={idx,key:k,location:dict[k],overseas}; } };
   check(CITY,false); check(COUNTRY,true);
   if(!best) return null;
-  const alias = !best.overseas && /^[a-z ]+$/.test(best.key) && low(best.location)!==best.key ? {from:titleCase(best.key), to:best.location} : null;
+  const alias = !best.overseas && /^[a-z ]+$/.test(best.key) && !low(best.location).startsWith(best.key) ? {from:titleCase(best.key), to:best.location} : null;
   return {location:best.location, overseas:best.overseas, key:best.key, alias};
 }
 function findModel(t){
@@ -570,6 +587,7 @@ function extractName(w){
   const toks=w.split(/\s+/).filter(Boolean); const name=[];
   for(let i=0;i<toks.length && i<16;i++){ const t=toks[i];
     const two=t+' '+(toks[i+1]||''); // two-word places like Navi Mumbai or Abu Dhabi
+    if(CITY[two]||COUNTRY[two]){ if(name.length) break; i++; continue; }
     const bad = !/^[a-z][a-z'.-]*$/.test(t) || t.length<2 || STOP.has(t) || CITY[t] || COUNTRY[t] || CITY[two] || COUNTRY[two];
     if(!name.length){ if(!bad) name.push(t); } else { if(bad) break; name.push(t); if(name.length===3) break; } }
   return name.length ? titleCase(name.join(' ')) : null;
@@ -618,7 +636,7 @@ function parseLead(text){
   L.side=sells&&!buys?'sell':buys&&!sells?'buy':sells||pr?null:'buy';
   for(const [re,c] of COND_RX) if(re.test(ls)){ L.cond=c==='Used'&&/\b(a grade|grade a)\b/.test(ls)?'Used, A grade':c==='Used'&&/\b(b grade|grade b)\b/.test(ls)?'Used, B grade':c; break; }
   let w=' '+low(src).replace(/[;\n:.]+/g,' , ').replace(/,/g,' , ').replace(/[^a-z0-9ऀ-ॿ઀-૿,'\-|+ ]+/g,' ').replace(/\s+/g,' ')+' ';
-  const bizM=/(?:^|\s)((?:[a-z0-9&]+\s+){1,2}(?:mobiles?|electronics|telecom|traders|trading|enterprises|communications?|stores?|gallery|impex|exports|general trading))(?=\s|$)/.exec(w);
+  const bizM=/(?:^|\s)((?:[a-z0-9&]+\s+){1,2}(?:mobiles?|electronics|telecom|traders|trading|enterprises|communications?|stores?|gallery|impex|exports|general trading|computers|infotech|peripherals))(?=\s|$)/.exec(w);
   if(bizM){ const words=bizM[1].trim().split(' ').filter(x=>!STOP.has(x)||/mobiles?|electronics|telecom|traders|trading/.test(x)); if(words.length>1){ L.business=titleCase(words.join(' ')); w=w.replace(bizM[1],' , '); } }
   const loc = findLocation(w) || (labCity ? {location:titleCase(labCity[1]), overseas:false, key:null, alias:null} : null);
   if(loc){ L.location=loc.location; L.overseas=loc.overseas; L.locAlias=loc.alias; }
@@ -630,7 +648,7 @@ function parseLead(text){
   if(mm && mm.exact){ L.model=mm.model.name; L.brand=mm.model.brand; L.category=mm.model.cat; w=w.replace(new RegExp('(^|[^a-z0-9])'+esc(mm.key)+'(?![a-z0-9])'),'$1 | '); }
   else if(mm){ L.modelSuggest={name:mm.model.name,brand:mm.model.brand,cat:mm.model.cat,typed:mm.typed}; w=w.replace(mm.typed,' | '); }
   if(!L.brand) for(const [re,b] of BRAND_RX) if(re.test(w)){ L.brand=b; break; }
-  if(!L.category){ if(/\b(phones?|mobiles?|smartphones?|iphones?)\b/.test(w)) L.category='Phone'; else if(/\b(watch(es)?|ghadi|smartwatch(es)?)\b/.test(w)) L.category='Watch'; else if(/\b(earbuds|airpods|headphones)\b/.test(w)) L.category='Audio'; }
+  if(!L.category){ if(/\b(phones?|mobiles?|smartphones?|iphones?)\b/.test(w)) L.category='Phone'; else if(/\b(watch(es)?|ghadi|smartwatch(es)?)\b/.test(w)) L.category='Watch'; else if(/\b(earbuds|airpods|headphones)\b/.test(w)) L.category='Audio'; else if(/\b(gpus?|graphics cards?)\b/.test(w)) L.category='Graphics card'; else if(/\b(ssds?|nvme)\b/.test(w)) L.category='SSD'; else if(/\b(hdds?|hard (?:disks?|drives?))\b/.test(w)) L.category='Hard drive'; }
   L.qty=L.items?L.items[0].qty:findQty(w);
   if(!L.qty && !L.items){ const v=/\b(lots|lot of|many|bulk|bahut|zyada|ghana|plenty|several)\b/.exec(w); if(v) L.qtyVague=v[1]; }
   L.source = (labSource && matchSource(labSource[1])) || matchSource(w);
@@ -666,14 +684,14 @@ function prodLabel(p){ if(!p) return ''; const brand=p.brand&&p.brand!=='Any'?p.
 // ===== LOGIC END =====
 
 // ===== APP STATE =====
-const ADMIN_ID='ketan';
+const ADMIN_ID='rushil';
 const CATS=['Call update','Price quote','Negotiation','Order confirmed','Payment','Not interested','General'];
 const STAGES=['New','Quoted','Negotiation','Won','Lost'];
 const PRICE={'iPhone 15':58000,'iPhone 15 Pro':92000,'iPhone 16':72000,'iPhone 16 Pro':105000,'iPhone 16 Pro Max':125000,'iPhone 17':80000,'iPhone 17 Pro':118000,'iPhone 17 Pro Max':138000,
  'Apple Watch Series 10':38000,'Apple Watch Ultra 2':76000,'AirPods Pro 2':19500,'Galaxy S24':52000,'Galaxy S24 Ultra':88000,'Galaxy S25':66000,'Galaxy S25 Ultra':104000,'Galaxy A55':31000,
  'Galaxy Z Fold 6':135000,'Galaxy Z Flip 6':84000,'Galaxy Watch 7':24000,'Forerunner 165':19000,'Forerunner 265':36000,'Forerunner 965':52000,'Fenix 8':78000,'Venu 3':37000,'Instinct 2':22000,
  'Vivoactive 5':24000,'OnePlus 13':62000,'OnePlus 12':52000,'OnePlus Nord 4':27000,'Redmi Note 14':15500,'Redmi Note 13':13500,'Xiaomi 14':55000,'Pixel 9':64000,'Pixel 9 Pro':92000};
-const BRANDS=['Apple','Samsung','Garmin','OnePlus','Xiaomi','Google','Vivo','Oppo','Realme','Fitbit','Amazfit','Nothing','Motorola','Huawei','Nokia','Sony','JBL','boAt','Noise'];
+const BRANDS=['Apple','Samsung','Garmin','OnePlus','Xiaomi','Google','Vivo','Oppo','Realme','Fitbit','Amazfit','Nothing','Motorola','Huawei','Nokia','Sony','JBL','boAt','Noise','Nvidia','AMD','Seagate','WD','Kingston','Crucial','Toshiba'];
 // Matches a typed brand to the known list, forgiving spelling mistakes and product words (iphone → Apple, galaxy → Samsung).
 function matchBrand(text){
   const t=low(text).trim();
@@ -710,7 +728,7 @@ function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imu
 
 const member=id=>S.team.find(m=>m.id===id);
 const memberByName=n=>S.team.find(m=>m.name===n);
-const colorOf=id=>({amit:'var(--c1)',priya:'var(--c2)',sneha:'var(--c3)',rohit:'var(--c4)',ketan:'var(--ink)'})[id]||'var(--c4)';
+const colorOf=id=>({amit:'var(--c1)',priya:'var(--c2)',sneha:'var(--c3)',rohit:'var(--c4)',rushil:'var(--ink)'})[id]||'var(--c4)';
 
 function ev(b,type,by,t,extra){ const e={type,by,t,...extra}; b.history.push(e); if(S&&S.seen) queueMicrotask(updateBell); return e; }
 function newBuyer(o){
@@ -732,7 +750,7 @@ function buildState(){
   S={nextId:1036,dealId:201,buyers:[],repId:'amit',slow:false,drafts:{},last:{},chats:{},pending:{},epoch:{},sync:false,
      user:null,dash:{orange:{key:'month'},brange:{key:'all'},pq:'',mk:{...MK_F0},cside:'all',ccat:'all',tk:{...TK_F0},adm:'scrape',view:'leads',buyerId:null,q:'',filter:'all',owner:'all',back:'buyers',teamSel:null},afterLogin:null};
   S.team=[
-    {id:'ketan',name:'Ketan Arora',role:'admin',phone:'9810000001',bot:true,active:true,target:0,joined:N-400*DAY},
+    {id:'rushil',name:'Rushil Khanna',role:'admin',phone:'9810000001',bot:true,active:true,target:0,joined:N-400*DAY},
     {id:'amit',name:'Amit Rawal',role:'rep',phone:'9811177001',bot:true,active:true,target:60,joined:N-300*DAY},
     {id:'priya',name:'Priya Sharma',role:'rep',phone:'9820088002',bot:true,active:true,target:60,joined:N-220*DAY},
     {id:'sneha',name:'Sneha Kulkarni',role:'rep',phone:'9819044003',bot:true,active:true,target:40,joined:N-90*DAY},
@@ -783,7 +801,7 @@ function buildState(){
   const used=new Set(B.map(b=>b.phoneKey));
   for(let i=0;i<62;i++){
     const days=Math.floor(Math.pow(r(),1.3)*30); const owner=reps[Math.floor(r()*reps.length)];
-    const m=MODELS[Math.floor(r()*MODELS.length)]; const ct=CT[Math.floor(r()*CT.length)];
+    const m=BASE_MODELS[Math.floor(r()*BASE_MODELS.length)]; const ct=CT[Math.floor(r()*CT.length)];
     let ph; do{ ph='93'+String(Math.floor(r()*1e8)).padStart(8,'0'); }while(used.has('91'+ph)); used.add('91'+ph);
     let t=dA(days,9+Math.floor(r()*10),Math.floor(r()*60)); if(t>N) t=N-Math.floor((1+r()*90)*60000);
     const ln=LN[Math.floor(r()*LN.length)];
@@ -798,6 +816,13 @@ function buildState(){
     b.history.sort((a,c)=>a.t-c.t);
     B.push(b);
   }
+  // Computer parts traders: Nehru Place (Delhi) and Lamington Road (Mumbai).
+  B.push(newBuyer({name:'Gurpreet Anand',business:'Anand Computers',ph:'9811266554',location:'Nehru Place, Delhi',products:[{brand:'Nvidia',model:'GeForce RTX 5090',category:'Graphics card',qty:'20'},{brand:'Nvidia',model:'GeForce RTX 5080',category:'Graphics card',qty:'30'}],source:'Market visit',owner:'amit',addedAt:dA(2,15)}));
+  B.push(newBuyer({name:'Rakesh Jain',business:'Jain Data Systems',ph:'9810344789',location:'Nehru Place, Delhi',products:[{brand:'Seagate',model:'IronWolf 8TB NAS HDD',category:'Hard drive',qty:'100'}],source:'Referral',owner:'priya',addedAt:dA(4,12)}));
+  B.push(newBuyer({name:'Pooja Sethi',business:'Sethi IT Solutions',ph:'9958122334',location:'Gurugram',products:[{brand:'Kingston',model:'NV3 1TB NVMe SSD',category:'SSD',qty:'500'}],source:'IndiaMART',owner:'sneha',addedAt:dA(3,11)}));
+  B.push(newBuyer({name:'Hitesh Mehta',business:'Mehta Infotech',ph:'9820177665',location:'Lamington Road, Mumbai',stock:[{brand:'Samsung',model:'990 Pro 2TB NVMe SSD',category:'SSD',qty:'200',price:P(14500),cond:'New'}],source:'WhatsApp group',owner:'priya',addedAt:dA(1,14)}));
+  B.push(newBuyer({name:'Zaid Lakdawala',business:'Lakdawala Computers',ph:'9867244331',location:'Lamington Road, Mumbai',stock:[{brand:'Nvidia',model:'GeForce RTX 5070 Ti',category:'Graphics card',qty:'30',price:P(78000),cond:'New'}],source:'Market visit',owner:'amit',addedAt:dA(0,10,30)}));
+  B.push(newBuyer({name:'Farhan Siddiqui',business:'Siddiqui Peripherals',ph:'9819355442',location:'Lamington Road, Mumbai',stock:[{brand:'Seagate',model:'BarraCuda 4TB HDD',category:'Hard drive',qty:'150',price:P(7200),cond:'New'}],source:'Exhibition',owner:'sneha',addedAt:dA(2,16)}));
   S.buyers=B;
   S.mkt=buildMarket(); mkLink();
   // Recent lead work, so Leads and Reports show the daily flow: some converted, some approached, a few not interested.
@@ -807,7 +832,8 @@ function buildState(){
     const l=pool().find(x=>x.type==='WTB'), t=at(d,15); setLeadState(l,'approached',owner,t-DAY); const b=convertLead(l,owner,t,true);
     if(stage){ const dl=addDeal(b,owner,t+DAY,l.model,l.qty,Math.round((l.price||900)*84/100)*100,stage==='Won'?'Quoted':stage); if(stage==='Won'){ dl.stage='Won'; dl.wonAt=t+2*DAY; ev(b,'stage',owner,dl.wonAt,{text:`Deal moved to Won: ${l.model} × ${l.qty}`}); } }
     b.history.sort((a,c)=>a.t-c.t); }
-  for(const [owner,d,h] of [['amit',3,12],['amit',0,10],['priya',2,16],['priya',0,9],['sneha',5,11],['sneha',1,14],['rohit',0,11],['amit',1,17]]){ const p=pool(); setLeadState(p[(d*7+h)%p.length],'approached',owner,at(d,h)); }
+  for(const [owner,d,h] of [['amit',3,12],['amit',0,10],['priya',2,16],['priya',0,9],['sneha',5,11],['sneha',1,14],['rohit',0,11],['amit',1,17],
+      ['amit',2,11],['amit',0,8],['priya',1,10],['priya',3,15],['priya',0,11],['sneha',2,10],['sneha',1,16],['rohit',1,12],['rohit',0,9],['amit',4,16]]){ const p=pool(); setLeadState(p[(d*7+h)%p.length],'approached',owner,at(d,h)); }
   for(const [owner,d] of [['priya',7],['sneha',4],['amit',2]]){ const p=pool(); setLeadState(p[(d*5)%p.length],'lost',owner,at(d,13)); }
   S.botBuyers=structuredClone(B); // the chat checks its own copy and never writes to the dashboard
   for(const m of S.team) S.chats[m.id]=freshChat(m,N);
@@ -1093,6 +1119,9 @@ const SCEN=[
   {t:'Not clear if buying or selling',tag:'New',c:'A price but no buying or selling word, so it asks.',steps:[{s:'Vikas Malhotra Noida 9899011223 iPhone 16 Pro 40 pcs at 1,05,000 per piece, referral'},{tap:'Selling'},{tap:'New'},{tap:'Save'}]},
   {t:'Seller without a price',tag:'New',c:'Asks the price once. The rep can skip it.',steps:[{s:'Rakesh Gupta, Gupta Electronics, Mumbai, 9820033441, has stock of 25 Apple Watch Series 10, refurbished, cold call'},{tap:'Skip'},{tap:'Save'}]},
   {t:'Existing buyer now selling',tag:'New',c:'Adds the stock to the same contact instead of making a new one.',steps:[{s:'Deepak Soni 9820033445 Mumbai, 40 OnePlus 13 stock hai, 52k per piece, sealed'},{tap:'Add this stock'}]}]},
+ {g:'Computer parts',items:[
+  {t:'Graphics card buyer, Nehru Place',tag:'New',c:'Knows RTX 5090 and RTX 5080 as graphics cards and reads both quantities.',steps:[{s:'Naveen Khurana, Khurana Computers, Nehru Place, 9811588990, RTX 5090 20 pcs aur RTX 5080 30 pcs chahiye, market visit'},{tap:'Save'}]},
+  {t:'SSD seller, Lamington Road',tag:'New',c:'"990 Pro" is the Samsung SSD. "Maal hai" makes it a seller.',steps:[{s:'Lamington Road se Yusuf bhai, 9820266778, Samsung 990 Pro 2TB ke 200 piece maal hai, ₹14,500 per piece, sealed, WhatsApp group'},{tap:'Save'}]}]},
  {g:'How the lead arrives',items:[
   {t:'Typed, everything included',c:'Reads every detail and shows one summary to save.',steps:[{s:'Manish Agarwal, Agarwal Telecom, Mumbai, 9820512345, wants 50 pcs iPhone 16 Pro, met at the Goregaon expo. Pays cash on delivery. GST 27AABCA1234C1Z5'},{tap:'Save'}]},
   {t:'Voice note',c:'Repeats what it heard, then the summary.',steps:[{voice:0},{tap:'Save'}]},
@@ -1217,7 +1246,7 @@ function updateBell(){
   S.bellN=n;
   const c=$('#navNotifCount'); if(c){ c.hidden=!n; c.textContent=n; }
 }
-const NF=[['all','All'],['req','Marketplaces'],['created','Saved numbers'],['remark','Remarks'],['deal','Deals'],['status','Status and owner']];
+const NF=[['all','All'],['req','Marketplaces'],['created','Saved numbers'],['remark','Remarks'],['status','Status and owner']];
 const nfMatch=(f,t)=>f==='all'||t===f||(f==='deal'&&t==='stage')||(f==='status'&&['status','owner','edit'].includes(t))||(f==='created'&&t==='product');
 function notifsHTML(u){
   const prev=S.dash.notifPrev; const f=S.dash.nf||'all';
@@ -1244,7 +1273,7 @@ function renderDash(){
   const el=$('#dashRoot');
   if(!S.user){ el.innerHTML=loginHTML(); return; }
   const u=member(S.user); const isAdmin=u.role==='admin'; const v=S.dash.view;
-  const nav=[['leads','Leads'],['taken','Taken'],['buyers','Contacts'],['kpis','Reports'],...(isAdmin?[['admin','Admin']]:[])];
+  const nav=[['leads','Requirements'],['taken','Taken'],['buyers','Contacts'],['kpis','Reports'],...(isAdmin?[['admin','Admin']]:[])];
   // Opening the tab marks everything read; the highlights stay until the user leaves it.
   if(v==='notifs'){ if(S.dash.notifPrev==null) S.dash.notifPrev=seenOf(u.id); S.seen[u.id]=now(); } else S.dash.notifPrev=null;
   const n=unreadFor(u.id);
@@ -1256,9 +1285,11 @@ function renderDash(){
   updateBell();
 }
 function loginHTML(){
-  const active=S.team.filter(m=>m.active);
-  return `<div class="login"><form class="login-card" id="loginForm"><div><h2>Sign in to the team dashboard</h2><p class="muted" style="margin:4px 0 0">Each team member has their own login. Admins see everyone's numbers.</p></div>
-    <div class="pick" role="radiogroup" aria-label="Team member">${active.map((m,i)=>`<label>${uav(m.id,30)}<input type="radio" name="who" value="${m.id}" ${i===0?'checked':''} id="who-${m.id}"><span><b>${hx(m.name)}</b><small>${m.role==='admin'?'Admin':'Sales rep'} · ${fmtIn(m.phone)}</small></span></label>`).join('')}</div>
+  // Two doors: the admin (Rushil) sees the whole team; team members see their own work.
+  const tab=S.loginTab||'rep', admin=tab==='admin', list=S.team.filter(m=>m.active&&(m.role==='admin')===admin);
+  return `<div class="login"><form class="login-card" id="loginForm"><div><h2>Sign in to the team dashboard</h2><p class="muted" style="margin:4px 0 0">${admin?'The admin sees the whole team: every lead, contact and report, plus scraping and site logins.':'Team members see all contacts, and only their own leads on Taken.'}</p></div>
+    <div class="chips" role="tablist" aria-label="Sign in as">${[['rep','Team member'],['admin','Admin']].map(([k,l])=>`<button type="button" class="chip" role="tab" data-lgtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+    <div class="pick" role="radiogroup" aria-label="${admin?'Admin':'Team member'}">${list.map((m,i)=>`<label>${uav(m.id,30)}<input type="radio" name="who" value="${m.id}" ${i===0?'checked':''} id="who-${m.id}"><span><b>${hx(m.name)}</b><small>${m.role==='admin'?'Admin':'Sales rep'} · ${fmtIn(m.phone)}</small></span></label>`).join('')}</div>
     <label class="field" for="pw">Password<input id="pw" type="password" value="demo1234" autocomplete="off"></label>
     <button class="primary" type="submit">Sign in</button>
     <p class="muted" style="margin:0;font-size:12px">Demo: any password works. The dashboard uses fixed example data, so the numbers are the same every time.</p></form></div>`;
@@ -1304,8 +1335,7 @@ function overviewHTML(u){
   let h=`<div class="work-head"><div><h2>Reports</h2><p>${isAdmin?'The whole team':'Your numbers'} · ${hx(rangeText(S.dash.orange))}</p></div>
     <div class="actions" style="align-items:center">${rangeCtl('orange')}</div></div>
     <h3>Sales</h3>
-    <div class="tiles">${tile('Leads added',k.leads,inWords)}${tile('Remarks updated',k.remarks,inWords)}${tile('Deals opened',k.opened,inWords)}
-    ${tile('Deals won',inrShort(k.wonVal),`${k.won} deal${k.won===1?'':'s'} ${inWords}`)}${tile('Open deals now',mo.open,inrShort(mo.openVal)+' in value')}
+    <div class="tiles">${tile('Leads added',k.leads,inWords)}${tile('Remarks updated',k.remarks,inWords)}
     ${!isAdmin&&u.target?tile('Monthly target',`${mo.leads}/${u.target}`,`<div class="bar" style="margin-top:6px"><i style="width:${Math.min(100,mo.leads/u.target*100)}%"></i></div>`):''}</div>`;
   h+=mktKpiHTML(u,R,inWords);
   const ids=isAdmin?S.team.filter(m=>m.role==='rep').map(m=>m.id):[u.id];
@@ -1338,11 +1368,11 @@ function dailyChart(ids,R){
 }
 function teamKpiTable(R){
   const rows=S.team.filter(m=>m.role==='rep').map(m=>({m,k:kpi(m.id,R.from,R.to),mo:kpi(m.id,T.month()),all:kpi(m.id,0)}));
-  return `<div class="tbl-wrap"><table class="t"><thead><tr><th>Member</th><th class="num">Leads added</th><th class="num">Remarks</th><th class="num">Deals opened</th><th class="num">Won</th><th>This month vs target</th><th class="num">Open deals now</th><th>Last active</th></tr></thead><tbody>
+  return `<div class="tbl-wrap"><table class="t"><thead><tr><th>Member</th><th class="num">Leads added</th><th class="num">Remarks</th><th>This month vs target</th><th>Last active</th></tr></thead><tbody>
     ${rows.map(({m,k,mo,all})=>`<tr class="click" data-member="${m.id}"><td><div style="display:flex;gap:8px;align-items:center">${uav(m.id,26)}<div><b>${hx(m.name)}</b>${!m.bot?` <span class="pill p-pending">Bot pending</span>`:''}</div></div></td>
-      <td class="num">${k.leads}</td><td class="num">${k.remarks}</td><td class="num">${k.opened}</td><td class="num">${k.wonVal?inrShort(k.wonVal):'–'}</td>
+      <td class="num">${k.leads}</td><td class="num">${k.remarks}</td>
       <td><div style="display:flex;gap:8px;align-items:center"><span class="mono">${mo.leads}/${m.target||'–'}</span><div class="bar" style="flex:1"><i style="width:${m.target?Math.min(100,mo.leads/m.target*100):0}%"></i></div></div></td>
-      <td class="num">${all.open}</td><td>${all.last?when(all.last):'Not yet'}</td></tr>`).join('')}</tbody></table></div>`;
+      <td>${all.last?when(all.last):'Not yet'}</td></tr>`).join('')}</tbody></table></div>`;
 }
 /* ---------- Products master: built from buyer interests, never typed in by hand ---------- */
 const prodKey=p=>p.model?low(p.model):low([p.brand&&p.brand!=='Any'?p.brand:'',p.category||''].join(' ').trim());
@@ -1435,6 +1465,9 @@ const phoneKey=p=>p.replace(/\D/g,'');
   const sites={}; MK_COMP.forEach((c,i)=>{ c.group=find(i); (sites[c.group]||=new Set()).add(c.site); });
   MK_COMP.forEach(c=>{ c.both=sites[c.group].size>1; });
 })();
+// Many companies list an office phone and a separate WhatsApp mobile. A third use the same number for both.
+MK_COMP.forEach(c=>{ const h=[...c.name].reduce((a,ch)=>(a*31+ch.charCodeAt(0))>>>0,7); if(h%3===0){ c.wa=c.phone; return; }
+  let k=h, i=c.phone.length; const d=c.phone.split(''); for(let n=0;n<4&&i>0;){ i--; if(/\d/.test(d[i])){ d[i]=String(k%10); k=Math.floor(k/10); n++; } } c.wa=d.join(''); });
 const MK_BY_SITE={gsmx:[],kadorf:[]}; MK_COMP.forEach((c,i)=>MK_BY_SITE[c.site].push(i));
 function mkTwin(c){ const t=MK_COMP.find(x=>x.group===c.group&&x.site!==c.site); if(!t) return null;
   const byName=coNorm(t.name)===coNorm(c.name), byPhone=phoneKey(t.phone)===phoneKey(c.phone);
@@ -1463,6 +1496,24 @@ const MK_STEPS=['Code accepted, signed in','Read want-to-buy listings','Read wan
 const MK_POSTED=[['any','Posted: any time'],['today','Posted today'],['3','Last 3 days'],['7','Last 7 days']];
 const MK_F0={type:'WTB',stage:'open',site:'all',cat:'all',brand:'all',q:''};
 function pickW(r,list,wi){ let s=0; for(const x of list) s+=x[wi]; let v=r()*s; for(const x of list){ v-=x[wi]; if(v<0) return x; } return list[0]; }
+// Computer parts: [brand, model, base USD price, weight, category, part number or null]. Graphics cards are listed by chip.
+const IT_MODELS=[['Nvidia','GeForce RTX 5090 32GB',2350,3,'Graphics card','ROG-ASTRAL-RTX5090-O32G'],['Nvidia','GeForce RTX 5080 16GB',1120,4,'Graphics card',null],
+  ['Nvidia','GeForce RTX 5070 Ti 16GB',800,4,'Graphics card','GV-N507TGAMING OC-16GD'],['AMD','Radeon RX 9070 XT 16GB',650,2,'Graphics card',null],
+  ['Samsung','990 Pro 2TB NVMe SSD',165,5,'SSD','MZ-V9P2T0BW'],['Samsung','870 EVO 1TB SATA SSD',82,3,'SSD','MZ-77E1T0BW'],['WD','Black SN850X 2TB SSD',148,3,'SSD','WDS200T2X0E'],
+  ['Kingston','NV3 1TB NVMe SSD',58,3,'SSD','SNV3S/1000G'],['Crucial','T705 2TB NVMe SSD',230,1,'SSD',null],
+  ['Seagate','BarraCuda 4TB HDD',82,4,'Hard drive','ST4000DM004'],['Seagate','IronWolf 8TB NAS HDD',185,3,'Hard drive','ST8000VN004'],['WD','Red Plus 6TB HDD',150,2,'Hard drive','WD60EFPX'],
+  ['Toshiba','MG10 20TB Enterprise HDD',370,2,'Hard drive','MG10ACA20TE']];
+const IT_CONDS=[['New',60,1],['New, bulk pack',15,.93],['Refurbished',15,.78],['Used and tested',10,.68]];
+const IT_NOTE={WTS:['Retail box, 3 year warranty.','Bulk pack, ex-works Hong Kong.','Ready stock in Dubai, ships this week.','Mixed board brands: ASUS, MSI, Gigabyte.',''],
+  WTB:['Need invoice with serial numbers.','Monthly requirement, payment by TT.','Retail box only, no bulk pack.','']};
+function mkItLead(r,site,no,t,runId){
+  const kd=site==='kadorf', type=r()<.45?'WTB':'WTS', m=pickW(r,IT_MODELS,3), [brand,model,base,,cat,part]=m, [cond,,f]=pickW(r,IT_CONDS,1);
+  const priced=kd?r()<.5:type==='WTS'?r()<.65:r()<.35, raw=base*f*(kd?.93:1)*(type==='WTB'?.93:1)*(.95+r()*.1), notes=IT_NOTE[type], cos=MK_BY_SITE[site];
+  const qtys=cat==='Graphics card'?[5,10,10,20,30,50]:[20,50,100,100,200,500];
+  return {id:(kd?'KD':'GX')+no,src:site,type,brand,model,cond,spec:null,part,cat,qty:qtys[Math.floor(r()*qtys.length)],cur:kd?'EUR':'USD',
+    price:priced?(kd?Math.round(raw*2)/2:Math.round(raw)):null,note:kd?'':notes[Math.floor(r()*notes.length)],
+    co:cos[Math.floor(r()*cos.length)],posted:t,first:runId,last:runId,status:'live',changed:null,changeText:null,crm:null};
+}
 function mkLead(r,site,no,t,runId){
   const kd=site==='kadorf', type=r()<.45?'WTB':'WTS', m=pickW(r,kd?KD_MODELS:MK_MODELS,3), [brand,model,base]=m; const [cond,,f]=pickW(r,MK_CONDS,1);
   // gsmExchange has a spec (US spec., Euro spec.); Kadorf has a part number instead, often empty.
@@ -1482,11 +1533,36 @@ function buildMarket(){
   seed('gsmx',48360,ci('gsmx','Qureshi General Trading LLC'),'WTB','Samsung','Galaxy S26 Ultra 512GB',100,null,'New','Arab spec.',tG-5*3600e3,2,'Monthly requirement. Payment in AED.');
   seed('kadorf',7400,ci('kadorf','Qureshi General Trading L.L.C.'),'WTS','Apple','iPhone 16 128GB',80,512,'New',null,tK-9*3600e3,1);
   seed('gsmx',48361,ci('gsmx','Khanna Mobiles'),'WTB','Apple','iPhone 17 256GB',60,null,'New','Indian spec.',tG-20*3600e3,2,'Delhi delivery. Need GST bill.');
+  const ri=rng(99);
+  for(let i=0;i<24;i++) leads.push(mkItLead(ri,'kadorf',7450+i,tK-Math.floor(ri()*4*DAY),1));
+  for(let i=0;i<32;i++) leads.push(mkItLead(ri,'gsmx',48450+i,tG-Math.floor(ri()*4*DAY),2));
   return {src:{gsmx:{login:'sales@yourcompany.com',otpTo:'Email'},kadorf:{login:'sales@yourcompany.com',otpTo:'SMS'}},
-    runs:[{id:1,src:'kadorf',t:tK,by:'ketan',added:90,updated:0,gone:0},{id:2,src:'gsmx',t:tG,by:'ketan',added:150,updated:0,gone:0}],
-    leads,nextNo:{gsmx:48362,kadorf:7401},run:null,hist:'all',cos:{},log:[]};
+    runs:[{id:1,src:'kadorf',t:tK,by:'rushil',added:90,updated:0,gone:0},{id:2,src:'gsmx',t:tG,by:'rushil',added:150,updated:0,gone:0}],
+    leads,nextNo:{gsmx:48500,kadorf:7500},run:null,hist:'all',cos:{},log:[]};
 }
 const mkCo=l=>MK_COMP[l.co];
+// The requirement as it is posted. gsmExchange: a heading (WTS Apple Phones) and free text over a few lines. Kadorf: one product line.
+const hsh=s=>[...s].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7);
+const MK_COLS=[['Black','Silver','Deep Blue'],['Mixed colours'],['Natural Titanium','Black Titanium'],['White','Black'],['Cosmic Orange','Silver','Deep Blue']];
+function reqText(l){
+  if(l.text) return l.text;
+  const c=mkCo(l), h=hsh(l.id), cat=l.cat||'Phone', kd=l.src==='kadorf';
+  const model=l.model.replace(new RegExp('^'+l.brand.replace(/[^\w]/g,'\\$&')+'\\s+','i'),'');
+  // gsmExchange: "WTS (New, Euro spec.) Samsung" then the model large. Kadorf: "New Apple" then the model, part number after.
+  const pre=kd?`${l.cond} ${l.brand}`:`${l.type} (${[l.cond,l.spec].filter(Boolean).join(', ')}) ${l.brand}`, body=[];
+  if(!kd){
+    if(cat==='Phone'&&h%3===0) body.push('Colours: '+MK_COLS[h%MK_COLS.length].join(' / '));
+    if(l.note) body.push(l.note);
+    if(h%2) body.push(`Please contact ${c.contact.split(' ')[0]}'s WhatsApp: ${c.wa} for the best ${l.type==='WTB'?'offer':'prices'}`);
+  }
+  return l.text={pre,model,part:kd?l.part:null,body};
+}
+// Requirement cell: the model clearly on top, as the site shows it, then the description if the company wrote one.
+function postCell(l,full){
+  const t=reqText(l);
+  return `<div class="rq"><div class="rqpre">${hx(t.pre)}</div><div class="rqmodel">${hx(t.model)}${t.part?` <span class="mono rqpart">${hx(t.part)}</span>`:''}${mkIsNew(l)?' <span class="tag new">Just scraped</span>':''}</div>
+    ${t.body.length?`<div class="rqbody${full?' full':''}">“${t.body.map(hx).join('<br>')}”</div>`:''}</div>`;
+}
 const mkLast=site=>S.mkt.runs.filter(r=>r.src===site).pop();
 const mkIsNew=l=>{ const runs=S.mkt.runs.filter(r=>r.src===l.src); return runs.length>1&&l.first===runs[runs.length-1].id; };
 const usd=n=>'$'+n.toLocaleString('en-US');
@@ -1498,7 +1574,7 @@ function mkScrape(site){
     else if(x<.16){ const q=l.qty; l.qty=Math.max(10,Math.round(q*(r()<.5?.5:1.5)/10)*10); if(l.price) l.price=Math.round(l.price*(.95+r()*.03));
       l.changed=runId; l.changeText=`Quantity ${q} → ${l.qty} pcs`+(l.price?', new price':''); updated++; } }
   const n=(site==='gsmx'?24:14)+Math.floor(r()*12);
-  for(let i=0;i<n;i++){ M.leads.push(mkLead(r,site,M.nextNo[site]++,last.t+Math.floor(r()*(t-last.t)),runId)); added++; }
+  for(let i=0;i<n;i++){ M.leads.push((r()<.2?mkItLead:mkLead)(r,site,M.nextNo[site]++,last.t+Math.floor(r()*(t-last.t)),runId)); added++; }
   // Contacts post too: one new listing from a company we already have, so the owner gets told.
   const known=MK_BY_SITE[site].filter(i=>M.leads.some(l=>l.co===i&&l.contact!=null));
   if(known.length){ const l=mkLead(r,site,M.nextNo[site]++,t-Math.floor(r()*3*3600e3),runId); l.co=known[Math.floor(r()*known.length)]; M.leads.push(l); added++; }
@@ -1525,10 +1601,10 @@ function scrapeHTML(u){
   const M=S.mkt, hf=M.hist, runs=M.runs.filter(r=>hf==='all'||r.src===hf).slice().reverse();
   const both=new Set(MK_COMP.filter(c=>c.both).map(c=>c.group)).size;
   return `<div class="work-head"><div><h2>Scrape data</h2><p>Pull the latest buyer and seller requirements from gsmExchange and Kadorf, manage their logins and see every past scrape.</p></div></div>
-    <div class="card howto">${[['1','Click Scrape','on the site you want.'],['2','Enter the OTP','the site sends to your registered email or phone.'],['3','Done in about a minute','New leads show up in Leads. Companies that are already contacts are linked to them, not listed again.']]
+    <div class="card howto">${[['1','Click Scrape','on the site you want.'],['2','Enter the OTP','the site sends to your registered email or phone.'],['3','Done in about a minute','New requirements show up in Requirements. Companies that are already contacts are linked to them, not listed again.']]
       .map(([n,b,t])=>`<div><span class="ndot">${n}</span><p><b>${b}</b> ${t}</p></div>`).join('')}</div>
     <div class="srcs">${mkSrcCard('gsmx',u)}${mkSrcCard('kadorf',u)}</div>
-    <div class="locked">${both} companies post on both sites. They are matched by company name or phone number and marked <span class="pill p-both">On both sites</span> in Leads.</div>
+    <div class="locked">${both} companies post on both sites. They are matched by company name or phone number and marked <span class="pill p-both">On both sites</span> in Requirements.</div>
     <div class="card"><div class="card-h"><h3>Scrape history</h3><div class="chips">${[['all','All sites'],['gsmx','gsmExchange'],['kadorf','Kadorf']].map(([k,l])=>`<button type="button" class="chip" data-mh="${k}" aria-pressed="${hf===k}">${l}</button>`).join('')}</div></div>
     <div class="tbl-wrap"><table class="t"><thead><tr><th>When</th><th>Site</th><th>Started by</th><th class="num">New</th><th class="num">Changed</th><th class="num">Removed from site</th></tr></thead><tbody>
     ${runs.length?runs.map(r=>`<tr><td style="white-space:nowrap">${when(r.t)}</td><td><span class="sitetag">${MK_SRC[r.src]}</span></td><td>${hx(member(r.by).name)}</td><td class="num">${r.added}</td><td class="num">${r.updated}</td><td class="num">${r.gone}</td></tr>`).join('')
@@ -1617,7 +1693,7 @@ function mkLink(){
 }
 // Lead status is per company: approaching one listing means the company is being handled.
 function leadState(l){ if(l.contact!=null) return {k:'contact',b:S.buyers.find(x=>x.id===l.contact)}; return S.mkt.cos[mkCo(l).group]||{k:'new'}; }
-function setLeadState(l,k,by=S.user,at=now()){ const g=mkCo(l).group; if(k==='new') delete S.mkt.cos[g]; else S.mkt.cos[g]={k,by,at}; if(k!=='new') S.mkt.log.push({g,k,by,at,src:l.src}); }
+function setLeadState(l,k,by=S.user,at=now()){ const g=mkCo(l).group, prev=S.mkt.cos[g]; if(k==='new') delete S.mkt.cos[g]; else S.mkt.cos[g]={k,by,at,...(k==='converted'&&prev&&prev.k==='approached'?{takenBy:prev.by,takenAt:prev.at}:{})}; if(k!=='new') S.mkt.log.push({g,k,by,at,src:l.src}); }
 function convertLead(l,owner=S.user,t=now(),quiet){
   if(!l||l.contact!=null) return;
   const c=mkCo(l), digits=phoneKey(c.phone), india=c.country==='India', dup=S.buyers.find(b=>b.phoneKey===digits);
@@ -1649,7 +1725,7 @@ function mkBotHint(b,rid){
   const hits=S.mkt.leads.filter(l=>l.status==='live'&&phoneKey(mkCo(l).phone)===b.phoneKey); if(!hits.length) return;
   const sites=[...new Set(hits.map(l=>MK_SRC[l.src]))].join(' and '), st=leadState(hits[0]);
   const how=st.k==='approached'?`taken by ${member(st.by).name} ${when(st.at)}`:st.k==='lost'?`marked not interested by ${member(st.by).name}`:st.k==='contact'?`already in contacts, owned by ${member(st.b.owner).name}`:'nobody has taken them yet';
-  say(`This company is already in Leads from ${sites} (${how}):\n${hits.slice(0,3).map(l=>`• ${l.type==='WTB'?'Wants':'Selling'} ${l.qty}× ${l.model}`).join('\n')}${hits.length>3?`\n• and ${hits.length-3} more`:''}\nI linked them to this buyer, so nobody else takes them.`,null,rid);
+  say(`This company is already in Requirements from ${sites} (${how}):\n${hits.slice(0,3).map(l=>`• ${l.type==='WTB'?'Wants':'Selling'} ${l.qty}× ${l.model}`).join('\n')}${hits.length>3?`\n• and ${hits.length-3} more`:''}\nI linked them to this buyer, so nobody else takes them.`,null,rid);
 }
 function statusCell(st){
   if(st.k==='contact') return `<span class="pill p-active">Already in contacts</span><div class="muted" style="font-size:12px">${hx(st.b.name)} · taken by ${whoName(st.b.owner)}</div>`;
@@ -1661,7 +1737,7 @@ function statusCell(st){
 const whoName=id=>id===S.user?'you':first(id);
 const canWork=st=>st.k==='approached'&&st.by===S.user;
 function leadButtons(l,st,panel){
-  const wa=`<a class="ghost" href="https://wa.me/${phoneKey(mkCo(l).phone)}" target="_blank" rel="noopener" data-lact="wa" data-lid="${l.id}">WhatsApp</a>`, admin=member(S.user).role==='admin';
+  const wa=`<a class="ghost" href="https://wa.me/${phoneKey(mkCo(l).wa)}" target="_blank" rel="noopener" data-lact="wa" data-lid="${l.id}">WhatsApp</a>`, admin=member(S.user).role==='admin';
   const takenBy=id=>`<span class="muted" style="font-size:12.5px">Taken by <b style="color:var(--ink)">${first(id)}</b></span>`;
   if(st.k==='contact') return st.b.owner===S.user||panel?`<button class="ghost" type="button" data-lact="open" data-lid="${l.id}">Open contact</button>`:takenBy(st.b.owner);
   if(st.k==='lost') return panel?`<button class="ghost" type="button" data-lact="reopen" data-lid="${l.id}">Reopen lead</button>`:'';
@@ -1671,7 +1747,7 @@ function leadButtons(l,st,panel){
 }
 function releaseLead(l){ const c=mkCo(l), by=leadState(l).by;
   setLeadState(l,'new'); S.mkt.log.push({g:c.group,k:'released',by:S.user,at:now(),src:l.src,from:by});
-  toast(by===S.user?`You let go of ${c.name}. It is back in Leads for anyone to take.`:`${c.name} released from ${member(by).name}. Anyone can take it now.`); }
+  toast(by===S.user?`You let go of ${c.name}. It is back in Requirements for anyone to take.`:`${c.name} released from ${member(by).name}. Anyone can take it now.`); }
 function leadAct(act,id){
   const l=S.mkt.leads.find(x=>x.id===id); if(!l) return; const st=leadState(l), c=mkCo(l);
   if(act==='open'){ $('#modal').hidden=true; S.dash.back=S.dash.view==='buyer'?S.dash.back:S.dash.view; S.dash.view='buyer'; S.dash.buyerId=st.b.id; renderDash(); $('#work').scrollTop=0; return; }
@@ -1683,7 +1759,7 @@ function leadAct(act,id){
   if(act==='convert') convertLead(l);
   renderDash(); if($('#modal').dataset.kind==='lead'&&!$('#modal').hidden) leadPanel(l);
 }
-const LSTAGES=[['open','To do: new and taken'],['new','New, nobody has taken it'],['mine','Taken by me'],['approached','Taken by anyone'],['fresh','From the last scrape'],['lost','Not interested'],['contact','Already in contacts'],['all','All leads']];
+const LSTAGES=[['open','To do: new and taken'],['new','New, nobody has taken it'],['mine','Taken by me'],['approached','Taken by anyone'],['fresh','From the last scrape'],['lost','Not interested'],['contact','Already in contacts'],['all','All requirements']];
 function leadsFilter(u){
   const f=S.dash.mk, q=low(f.q).trim(), type=f.type;
   return S.mkt.leads.filter(l=>{
@@ -1696,7 +1772,7 @@ function leadsFilter(u){
     if(f.site!=='all'&&l.src!==f.site) return false;
     if(f.brand!=='all'&&l.brand!==f.brand) return false;
     if(f.cat!=='all'&&(l.cat||'Phone')!==f.cat) return false;
-    if(q&&!low([l.brand,l.model,l.part,l.note,c.name,c.contact,c.country,c.city,c.phone,l.id].join(' ')).includes(q)) return false;
+    if(q&&!low([l.brand,l.model,l.part,l.note,reqText(l).pre,reqText(l).model,...reqText(l).body,c.name,c.contact,c.country,c.city,c.phone,l.id].join(' ')).includes(q)) return false;
     return true;
   }).sort((a,b)=>b.posted-a.posted);
 }
@@ -1711,27 +1787,28 @@ function scrapeBar(){
 function leadsHTML(u){
   const f=S.dash.mk, list=leadsFilter(u), buy=f.type==='WTB', RQ=reqCtx().reqs;
   const cnt=t=>{ const o=f.type; f.type=t; const n=leadsFilter(u).length; f.type=o; return n; };
-  const inContacts=['open','new','fresh'].includes(f.stage)?(()=>{ const o=f.stage; f.stage='contact'; const n=leadsFilter(u).length; f.stage=o; return n; })():0;
-  let h=`<div class="work-head"><div><h2>Leads</h2><p>Scraped from gsmExchange and Kadorf. Take a lead so the team knows it is yours, message them on WhatsApp, then convert the good ones into contacts.</p></div></div>
+  let h=`<div class="work-head"><div><h2>Requirements</h2></div></div>
     ${scrapeBar()}
     <div class="bigtabs" role="tablist" aria-label="Lead type">
       <button type="button" role="tab" class="bigtab" data-mt="WTB" aria-selected="${buy}"><span class="n">${cnt('WTB')}</span><b>Want to buy</b><span>Buyers looking for stock</span></button>
       <button type="button" role="tab" class="bigtab" data-mt="WTS" aria-selected="${!buy}"><span class="n">${cnt('WTS')}</span><b>Want to sell</b><span>Sellers with stock</span></button></div>
-    <div class="searchbar"><input type="search" id="mq" placeholder="Search model, company, contact or country" value="${hx(f.q)}" aria-label="Search leads">
+    <div class="searchbar"><input type="search" id="mq" placeholder="Search requirement, company, contact or country" value="${hx(f.q)}" aria-label="Search requirements">
       <select id="lstage" aria-label="Status">${LSTAGES.map(([k,l])=>`<option value="${k}" ${f.stage===k?'selected':''}>${l}</option>`).join('')}</select>
       <select id="lsite" aria-label="Site">${[['all','Both sites'],['gsmx','gsmExchange'],['kadorf','Kadorf']].map(([k,l])=>`<option value="${k}" ${f.site===k?'selected':''}>${l}</option>`).join('')}</select>
       <select id="lcat" aria-label="Category"><option value="all">All categories</option>${[...new Set(S.mkt.leads.map(l=>l.cat||'Phone'))].sort().map(v=>`<option value="${v}" ${f.cat===v?'selected':''}>${hx(catLabel(v))}</option>`).join('')}</select>
       <select id="mkbrand" aria-label="Brand"><option value="all">All brands</option>${[...new Set(S.mkt.leads.map(l=>l.brand))].sort().map(v=>`<option ${f.brand===v?'selected':''}>${hx(v)}</option>`).join('')}</select>
       ${mkFiltered()?'<button type="button" class="backlink" style="align-self:center" data-act="mkclear">Clear</button>':''}</div>
-    ${inContacts?`<div class="locked">${inContacts} ${buy?'want-to-buy':'want-to-sell'} lead${inContacts===1?' is':'s are'} not shown because the company is already in contacts. <button type="button" class="backlink" data-act="showcontacts">Show them</button></div>`:''}
-    <div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">${buy?'Target price':'Price'}</th><th>Company</th><th>Status</th><th></th></tr></thead><tbody>`;
-  if(!list.length) h+=`<tr><td colspan="6"><div class="empty">${f.stage==='open'&&!f.q?'Nothing to do here. Scrape again for fresh leads.':'No leads match.'}</div></td></tr>`;
+    <div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Requirement</th><th class="num">Qty</th><th class="num">${buy?'Target price':'Price'}</th><th>Company</th><th>Contact</th><th>Status</th><th></th></tr></thead><tbody>`;
+  if(!list.length) h+=`<tr><td colspan="7"><div class="empty">${f.stage==='open'&&!f.q?'Nothing to do here. Scrape again for fresh requirements.':'No requirements match.'}</div></td></tr>`;
+  const perCo={}; for(const x of S.mkt.leads) if(x.status==='live'&&x.type===f.type){ const g=mkCo(x).group; perCo[g]=(perCo[g]||0)+1; }
   for(const l of list.slice(0,150)){ const c=mkCo(l), st=leadState(l);
-    h+=`<tr class="click" data-lead="${l.id}" tabindex="0"><td><span class="muted">${hx(l.brand)}</span> <b>${hx(l.model)}</b>${mkIsNew(l)?' <span class="tag new">Just scraped</span>':''}<div class="muted" style="font-size:12px">${[l.cond,l.spec,l.part,l.cat!=='Phone'?l.cat:null].filter(Boolean).map(hx).join(' · ')}</div></td>
+    const nCo=perCo[c.group]||1;
+    h+=`<tr class="click" data-lead="${l.id}" tabindex="0"><td>${postCell(l)}</td>
       <td class="num">${l.qty}</td><td class="num">${reqPrice({price:l.price,cur:l.cur,l,side:buy?'buy':'sell'})}</td>
-      <td><b>${hx(c.name)}</b><div class="cobadges">${srcTag(l.src)}<span class="muted">${c.flag} ${hx(c.city)} · ${when(l.posted)}</span></div></td>
+      <td><b>${hx(c.name)}</b><div class="cobadges">${srcTag(l.src)}<span class="muted">${c.flag} ${hx(c.city)} · ${when(l.posted)}</span></div>${nCo>1?`<button type="button" class="backlink rqco" data-mkco="${hx(c.name)}">${nCo} ${buy?'buy':'sell'} requirements from this company</button>`:''}</td>
+      <td class="rqwho"><b>${hx(c.contact)}</b><div><span class="muted">Phone</span> <span class="mono">${hx(c.phone)}</span></div><div><span class="muted">WhatsApp</span> <span class="mono">${hx(c.wa)}</span></div><div class="muted">${hx(c.email)}</div></td>
       <td>${statusCell(st)}</td><td><div class="rowacts">${matchButton(l.id,RQ)}${leadButtons(l,st,false)}</div></td></tr>`; }
-  h+=`</tbody></table></div>${list.length>150?`<p class="muted" style="font-size:12.5px;margin:8px">Showing 150 of ${list.length}. Search or filter to narrow down.</p>`:''}</div>`;
+  h+=`</tbody></table></div>${list.length>150?`<p class="muted" style="font-size:12.5px;margin:8px">Showing 150 of ${list.length} requirements. Search or filter to narrow down.</p>`:''}</div>`;
   return h;
 }
 /* ---------- v2: find buyers / sellers ---------- */
@@ -1775,22 +1852,35 @@ function matchReqHTML(q){
       <div class="facts"><div><span>Quantity</span>${l.qty} pcs</div><div><span>${buy?'Target price':'Price'}</span>${l.price?money(l.price,l.cur)+' per piece':buy?'Wants offers':'Ask the seller'}</div>
         <div><span>Condition</span>${[l.cond,l.spec].filter(Boolean).map(hx).join(', ')||'–'}</div><div><span>Category</span>${hx(catLabel(l.cat||'Phone'))}</div>
         ${l.part?`<div><span>Part number</span><span class="mono" style="display:inline;font-size:13px;color:var(--ink)">${hx(l.part)}</span></div>`:''}
-        <div><span>Company</span>${hx(c.name)} · ${c.flag} ${hx(c.city)}</div><div><span>Posted</span>${when(l.posted)}</div><div><span>Status</span>${statusCell(leadState(l))}</div></div></div>`; }
+        <div><span>Company</span>${hx(c.name)} · ${c.flag} ${hx(c.city)}</div><div><span>Posted</span>${when(l.posted)}</div><div><span>Status</span>${statusCell(leadState(l))}</div></div>
+      <div class="rqpost" style="margin-top:10px"><div class="muted" style="font-size:12px;margin-bottom:4px">As posted</div>${postCell(l,true)}</div></div>`; }
   const b=q.b;
   return `<div class="card" style="background:var(--soft)"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill ${buy?'p-buy':'p-sell'}">${buy?'Wants to buy':'Selling'}</span><b style="font-size:16px">${hx(b.business||b.name)}</b>
       <span class="muted">${hx(b.name)}${b.location?' · '+hx(b.location):''} · owner ${b.owner===S.user?'you':hx(member(b.owner).name)}</span></div>
     <div class="tbl-wrap" style="margin-top:8px"><table class="t"><thead><tr><th>Product</th><th>Category</th><th class="num">Qty</th><th class="num">${buy?'Budget':'Price'}</th><th>Source</th></tr></thead><tbody>${q.items.map(r=>
       `<tr><td><b>${hx(r.model)}</b>${r.cond?` <span class="muted">${hx(r.cond)}</span>`:''}</td><td>${hx(catLabel(r.cat||'Other'))}</td><td class="num">${r.qty||'–'}</td><td class="num">${reqPrice(r)}</td><td>${srcTag(r.src)}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
-function matchPanel(key,lv='all'){
-  const q=matchQ(key), M=matchFind(q), buy=q.type==='WTB', w=buy?'sellers':'buyers', l=q.l, CAP=40;
+// Mobile, WhatsApp and email for a contact. Email and WhatsApp come from their marketplace listing when the phone matches.
+function contactInfo(b){
+  const tw=MK_COMP.find(c=>phoneKey(c.phone)===b.phoneKey), wa=tw&&tw.wa?tw.wa:b.phone, mail=b.email||(tw&&tw.email)||mkMail(b.business||b.name);
+  return `<div><span class="muted">Mobile</span> <span class="mono">${hx(b.phone)}</span></div>${b.alt?`<div><span class="muted">Alt.</span> <span class="mono">${hx(b.alt)}</span></div>`:''}
+    <div><span class="muted">WhatsApp</span> <a class="mono" href="https://wa.me/${phoneKey(wa)}" target="_blank" rel="noopener" data-wa>${hx(wa)}</a></div>
+    <div><span class="muted">Email</span> <a href="mailto:${hx(mail)}" data-wa>${hx(mail)}</a></div>${b.location?`<div class="muted">${hx(b.location)}</div>`:''}`;
+}
+function matchPanel(key,lv='all',tab='c'){
+  const q=matchQ(key), {reqs}=reqCtx(), M=matchFind(q,reqs), buy=q.type==='WTB', w=buy?'sellers':'buyers', l=q.l, CAP=40;
+  // What each contact deals in on the side we need: their categories and models, the matched model first.
+  const side=buy?'sell':'buy', mName=r=>(r.brand&&!low(r.model).startsWith(low(r.brand))?r.brand+' ':'')+r.model;
+  const deals=(b,top)=>{ const rs=reqs.filter(r=>r.b===b&&r.side===side), ms=[...new Set([mName(top),...rs.map(mName)])];
+    return {cats:[...new Set(rs.map(r=>catLabel(r.cat||'Other')))].join(', '), ms:ms.slice(0,4).map(hx).join(', ')+(ms.length>4?` <span class="muted">+${ms.length-4} more</span>`:'')}; };
   const ok=x=>lv==='all'||(lv==='model'?x.lvl>1:x.lvl===1), cs=M.contacts.filter(ok), ls=M.leads.filter(ok);
   const cnt=f=>[...M.contacts,...M.leads].filter(f).length;
   const tag=v=>`<span class="pill ${MATCH_TAG[v][0]}">${MATCH_TAG[v][1]}</span>`;
   const head=`<thead><tr><th>Company</th><th>${buy?'Has in stock':'Wants'}</th><th>Match</th><th class="num">Qty</th><th class="num">Price</th><th>Who has it</th></tr></thead>`;
-  const cRows=cs.slice(0,CAP).map(({lvl,r,b})=>`<tr class="click" data-mbuyer="${b.id}"><td><b>${hx(b.business||b.name)}</b><div class="muted" style="font-size:12px">${hx(b.name)}${b.location?' · '+hx(b.location):''}</div></td>
-    <td>${r.brand&&!low(r.model).startsWith(low(r.brand))?`<span class="muted">${hx(r.brand)}</span> `:''}${hx(r.model)}<div class="cobadges">${srcTag(r.src)}<span class="muted">${when(r.t)}</span></div></td><td>${tag(lvl)}</td><td class="num">${r.qty||'–'}</td><td class="num">${reqPrice(r)}</td>
-    <td><span class="tkwho">${uav(b.owner,22)}${b.owner===S.user?'<b>You</b>':hx(member(b.owner).name)}</span></td></tr>`).join('');
+  const cHead=`<thead><tr><th>Contact</th><th>Contact details</th><th>Company</th><th>Category</th><th>Models they ${buy?'sell':'buy'}</th></tr></thead>`;
+  const cRows=cs.slice(0,CAP).map(({r,b})=>{ const d=deals(b,r); return `<tr class="click" data-mbuyer="${b.id}"><td><b>${hx(b.name)}</b>${b.id<=S.seedMax?` <a class="newwin" href="#contact=${b.id}&as=${S.user}" target="_blank" rel="noopener" data-wa title="Open contact in a new window" aria-label="Open ${hx(b.name)} in a new window">↗</a>`:''}<div class="muted" style="font-size:12px">Owner: ${b.owner===S.user?'you':hx(member(b.owner).name)}</div></td>
+    <td class="rqwho">${contactInfo(b)}</td>
+    <td>${hx(b.business||'–')}</td><td>${hx(d.cats||catLabel(r.cat||'Other'))}</td><td>${d.ms}</td></tr>`; }).join('');
   const lRows=ls.slice(0,CAP).map(({lvl,l:x})=>{ const c=mkCo(x); return `<tr class="click" data-mlead="${x.id}"><td><b>${hx(c.name)}</b><div class="muted" style="font-size:12px">${c.flag} ${hx(c.city)}</div></td>
     <td><span class="muted">${hx(x.brand)}</span> ${hx(x.model)}<div class="cobadges">${srcTag(x.src)}<span class="muted">${when(x.posted)}</span></div></td><td>${tag(lvl)}</td><td class="num">${x.qty}</td><td class="num">${reqPrice({price:x.price,cur:x.cur,l:x,side:buy?'sell':'buy'})}</td><td>${statusCell(leadState(x))}</td></tr>`; }).join('');
   const more=(a)=>a.length>CAP?`<p class="muted" style="font-size:12.5px;margin:6px 0 0">Showing the best ${CAP} of ${a.length}.</p>`:'';
@@ -1798,10 +1888,11 @@ function matchPanel(key,lv='all'){
   modal(`${mhead(buy?'Requirement and available sellers':'Stock and available buyers')}
     ${matchReqHTML(q)}
     <div style="display:flex;flex-direction:column;gap:8px"><h3 style="margin:0">Available ${w}</h3>
-      <div class="chips">${chips.map(([k,t,n])=>`<button type="button" class="chip" data-mf="${k}" data-mkey="${key}" aria-pressed="${lv===k}">${t} · ${n}</button>`).join('')}</div>
+      <div class="mtabs" role="tablist">${[['c',`In contacts · ${cs.length}`],['l',`On gsmExchange and Kadorf · ${ls.length}`]].map(([k,t])=>`<button type="button" role="tab" data-mtab="${k}" data-mlv="${lv}" data-mkey="${key}" aria-selected="${tab===k}">${t}</button>`).join('')}</div>
+      <div class="chips">${chips.map(([k,t,n])=>`<button type="button" class="chip" data-mf="${k}" data-mkey="${key}" data-mt="${tab}" aria-pressed="${lv===k}">${t} · ${n}</button>`).join('')}</div>
       <p class="muted" style="margin:0;font-size:12.5px">Best matches first. If someone else has the company, talk to them first.</p></div>
-    <div><h3 style="margin-bottom:6px">In contacts (${cs.length})</h3>${cs.length?`<div class="tbl-wrap"><table class="t">${head}<tbody>${cRows}</tbody></table></div>${more(cs)}`:`<div class="empty">No contact ${buy?'has this in stock':'wants this'} yet.</div>`}</div>
-    <div><h3 style="margin-bottom:6px">On gsmExchange and Kadorf, not contacts yet (${ls.length})</h3>${ls.length?`<div class="tbl-wrap"><table class="t">${head}<tbody>${lRows}</tbody></table></div>${more(ls)}`:`<div class="empty">No other listings match.</div>`}</div>
+    ${tab==='c'?`<div>${cs.length?`<div class="tbl-wrap"><table class="t">${cHead}<tbody>${cRows}</tbody></table></div>${more(cs)}`:`<div class="empty">No contact ${buy?'has this in stock':'wants this'} yet.</div>`}</div>`
+    :`<div><p class="muted" style="margin:0 0 6px;font-size:12.5px">Listings from companies that are not in your contacts yet.</p>${ls.length?`<div class="tbl-wrap"><table class="t">${head}<tbody>${lRows}</tbody></table></div>${more(ls)}`:`<div class="empty">No other listings match.</div>`}</div>`}
     <div class="actions">${l?`<button class="ghost" type="button" data-mlead="${l.id}">Open the lead</button>`:`<button class="ghost" type="button" data-mbuyer="${q.b.id}">Open contact</button>`}<button class="ghost" type="button" data-close>Close</button></div>`,()=>{});
   const el=$('#modal'); el.dataset.kind='match'; el.querySelector('.sheet').classList.add('wide'); modalLinks();
 }
@@ -1810,7 +1901,9 @@ function modalLinks(){
   const el=$('#modal'), close=el.onclick;
   el.onclick=e=>{ const a=e.target.closest('[data-lact]'); if(a){ if(a.dataset.lact!=='wa') e.preventDefault(); return leadAct(a.dataset.lact,a.dataset.lid); }
     const mt=e.target.closest('[data-match]'); if(mt) return matchPanel(mt.dataset.match);
-    const mf=e.target.closest('[data-mf]'); if(mf){ e.preventDefault(); const sc=el.querySelector('.sheet').scrollTop; matchPanel(mf.dataset.mkey,mf.dataset.mf); el.querySelector('.sheet').scrollTop=sc; return; }
+    const mf=e.target.closest('[data-mf]'); if(mf){ e.preventDefault(); const sc=el.querySelector('.sheet').scrollTop; matchPanel(mf.dataset.mkey,mf.dataset.mf,mf.dataset.mt); el.querySelector('.sheet').scrollTop=sc; return; }
+    const tb=e.target.closest('[data-mtab]'); if(tb){ e.preventDefault(); const sc=el.querySelector('.sheet').scrollTop; matchPanel(tb.dataset.mkey,tb.dataset.mlv,tb.dataset.mtab); el.querySelector('.sheet').scrollTop=sc; return; }
+    if(e.target.closest('[data-wa]')) return; // WhatsApp link opens in a new tab, the row stays put
     const mb=e.target.closest('[data-mbuyer]'); if(mb){ el.hidden=true; el.dataset.kind=''; S.dash.back=S.dash.view==='buyer'?S.dash.back:S.dash.view; S.dash.view='buyer'; S.dash.buyerId=+mb.dataset.mbuyer; renderDash(); $('#work').scrollTop=0; return; }
     const x=e.target.closest('[data-mlead]'); if(x) return leadPanel(S.mkt.leads.find(y=>y.id===x.dataset.mlead));
     close(e); };
@@ -1827,77 +1920,84 @@ function leadPanel(l){
     <div class="facts" style="margin-top:0"><div><span>Quantity</span>${l.qty} pcs</div><div><span>${l.type==='WTB'?'Target price':'Price'}</span>${l.price?money(l.price,l.cur)+' per piece':l.type==='WTB'?'Wants offers':'Ask the seller'}</div>
       <div><span>Condition</span>${[l.cond,l.spec].filter(Boolean).map(hx).join(', ')}</div><div><span>Category</span>${hx(l.cat||'Phone')}</div>
       ${l.part?`<div><span>Part number</span><span class="mono">${hx(l.part)}</span></div>`:''}<div><span>Posted on ${MK_SRC[l.src]}</span>${when(l.posted)}${l.src==='kadorf'?` by ${hx(c.contact.split(' ')[0])}`:''}</div></div>
-    ${l.note?`<div class="locked" style="color:var(--ink)">“${hx(l.note)}”</div>`:''}
+    <div class="card rqpost"><div class="muted" style="font-size:12px;margin-bottom:4px">As posted on ${MK_SRC[l.src]}</div>${postCell(l,true)}</div>
     ${msg}
     <div class="card" style="background:var(--soft)"><b>${hx(c.name)}</b>${c.rating?` <span style="color:var(--good)">+${c.rating}</span>`:''}
-      <div class="facts"><div><span>Contact</span>${hx(c.contact)}</div><div><span>Phone</span><span class="mono">${hx(c.phone)}</span></div>
+      <div class="facts"><div><span>Contact</span>${hx(c.contact)}</div><div><span>Phone</span><span class="mono">${hx(c.phone)}</span></div><div><span>WhatsApp</span><span class="mono">${hx(c.wa)}</span></div>
       <div><span>Email</span>${hx(c.email)}</div><div><span>Location</span>${c.flag} ${hx(c.city)}, ${hx(c.country)}</div></div>
       ${twin?`<p style="margin:10px 0 0;font-size:13px">Also on <b>${MK_SRC[twin.c.site]}</b> as “${hx(twin.c.name)}”. Same company, so it is one lead.</p>`:''}</div>
-    ${others.length?`<div><h3 style="margin-bottom:6px">Other listings from this company</h3><div class="tbl-wrap"><table class="t">${others.slice(0,6).map(x=>`<tr class="click" data-mlead="${x.id}"><td>${srcTag(x.src)}</td><td><span class="pill ${x.type==='WTB'?'p-buy':'p-sell'}">${x.type==='WTB'?'Buys':'Sells'}</span></td><td>${hx(x.model)}</td><td class="num">${x.qty} pcs</td></tr>`).join('')}</table></div></div>`:''}
+    ${others.length?`<div><h3 style="margin-bottom:6px">Other requirements from this company (${others.length})</h3><div class="tbl-wrap"><table class="t">${others.slice(0,8).map(x=>`<tr class="click" data-mlead="${x.id}"><td>${srcTag(x.src)}</td><td>${postCell(x)}</td><td class="num">${x.qty} pcs</td></tr>`).join('')}</table></div></div>`:''}
     <div class="actions">${leadButtons(l,st,true)}${matchButton(l.id)}<button class="ghost" type="button" data-close>Close</button></div>`,()=>{});
   $('#modal').dataset.kind='lead'; modalLinks();
 }
 /* ---------- v2: taken ---------- */
-// One list of every company a team member is working on: leads they took and contacts they own.
-// Reps see the whole team's list, so they know whom to talk to before messaging a company.
-const TK_F0={who:'all',stage:'all',src:'all',q:''};
-const TK_STAGES=[['all','All stages'],['approached','Taken, not a contact yet'],['contact','Contacts']];
-const TK_SRC=[['all','All sources'],['gsmx','gsmExchange'],['kadorf','Kadorf'],['WhatsApp','WhatsApp'],['Manual','Added by hand']];
-function takenRows(reqs){
-  const rows=[], byGroup=new Map(), RQ=new Map();
-  for(const r of reqs) if(r.b) (RQ.get(r.b.id)||RQ.set(r.b.id,[]).get(r.b.id)).push(r);
-  for(const l of S.mkt.leads){ if(l.status!=='live'||l.contact!=null) continue; const g=mkCo(l).group; (byGroup.get(g)||byGroup.set(g,[]).get(g)).push(l); }
-  for(const [g,ls] of byGroup){ const st=S.mkt.cos[g]; if(!st||st.k!=='approached') continue;
+// Leads a team member has taken and not yet converted. Once converted, the company is a contact and leaves this list.
+// The admin sees everyone's taken leads; a team member sees only their own.
+const TK_F0={who:'all',src:'all',q:'',type:'WTB',stage:'all',cat:'all',brand:'all'};
+const TK_STAGES=[['all','All taken'],['working','Still working on it'],['converted','Converted to contact'],['today','Taken today'],['week','Taken in the last 7 days'],['fresh','From the last scrape']];
+const TK_SRC=[['all','Both sites'],['gsmx','gsmExchange'],['kadorf','Kadorf']];
+function takenRows(){
+  const rows=[], byGroup=new Map();
+  // Converted companies stay here too (their listings now belong to the contact), so the list shows what each person worked on.
+  for(const l of S.mkt.leads){ if(l.status!=='live') continue; const g=mkCo(l).group, st=S.mkt.cos[g]; if(l.contact!=null&&!(st&&st.k==='converted')) continue; (byGroup.get(g)||byGroup.set(g,[]).get(g)).push(l); }
+  for(const [g,ls] of byGroup){ const st=S.mkt.cos[g]; if(!st||!['approached','converted'].includes(st.k)) continue;
     const sorted=ls.slice().sort((a,b)=>b.posted-a.posted), l=sorted[0], c=mkCo(l);
     // Newest listing of each type gets its own buyers/sellers button.
     const lists=['WTB','WTS'].map(t=>sorted.find(x=>x.type===t)).filter(Boolean);
-    rows.push({kind:'lead',id:'L'+g,who:st.by,since:st.at,last:st.at,name:c.name,person:c.contact,place:`${c.flag} ${c.city}`,phone:c.phone,
-      sides:lists.map(x=>x.type==='WTB'?'buy':'sell'),srcs:[...new Set(ls.map(x=>x.src))],items:sorted.map(x=>x.model),n:ls.length,l,lists}); }
-  for(const b of S.buyers){ if(b.status==='archived'||b.status==='optedout') continue;
-    const cr=createdOf(b), via=cr.via||'', src=/ lead$/.test(via)?(/kadorf/i.test(via)?'kadorf':'gsmx'):/whatsapp/i.test(via)?'WhatsApp':'Manual', rq=RQ.get(b.id)||[];
-    rows.push({kind:'contact',id:'B'+b.id,who:b.owner,since:cr.t,last:Math.max(...b.history.map(e=>e.t)),name:b.business||b.name,person:b.name,place:b.location||'',phone:b.phone,
-      sides:['buy','sell'].filter(sd=>rq.some(r=>r.side===sd)),srcs:[...new Set([src,...rq.map(r=>r.src)])],items:[...new Set(rq.map(r=>r.model))],b,lists:[]}); }
+    const conv=st.k==='converted';
+    rows.push({id:'L'+g,who:conv?st.takenBy||st.by:st.by,at:conv?st.takenAt||st.at:st.at,conv,convAt:conv?st.at:null,name:c.name,person:c.contact,place:`${c.flag} ${c.city}`,phone:c.phone,
+      srcs:[...new Set(ls.map(x=>x.src))],items:sorted.map(x=>x.model),n:ls.length,l,lists,ls:sorted}); }
   return rows;
 }
 function takenFilter(rows,f,skip){
   const q=low(f.q).trim();
   return rows.filter(r=>{
     if(skip!=='who'&&f.who!=='all'&&r.who!==f.who) return false;
-    if(f.stage==='approached'&&r.kind!=='lead') return false;
-    if(f.stage==='contact'&&r.kind!=='contact') return false;
     if(f.src!=='all'&&!r.srcs.includes(f.src)) return false;
     if(q&&!low([r.name,r.person,r.place,r.phone,member(r.who).name,...r.items].join(' ')).includes(q)) return false;
     return true; });
 }
-function takenStage(r){
-  if(r.kind==='lead') return `<span class="pill p-pending">Taken</span><div class="muted" style="font-size:12px">${when(r.since)} · ${r.n} listing${r.n===1?'':'s'}</div>`;
-  return `<span class="pill p-active">Contact</span><div class="muted" style="font-size:12px">Since ${fmtDate(r.since)}</div>`;
-}
 function takenHTML(u){
-  const f=S.dash.tk, isAdmin=u.role==='admin', RQ=reqCtx().reqs, all=takenRows(RQ);
-  const mates=S.team.filter(m=>m.active), pool=takenFilter(all,f,'who'), list=takenFilter(all,f).sort((a,b)=>b.last-a.last);
-  const card=(id,name,av)=>{ const R=id==='all'?pool:pool.filter(r=>r.who===id), ap=R.filter(r=>r.kind==='lead').length;
+  // Same list as Requirements, but only the listings someone is working on, with who took them.
+  const f=S.dash.tk, isAdmin=u.role==='admin', RQ=reqCtx().reqs, all=takenRows(), buy=f.type==='WTB';
+  if(!isAdmin) f.who=u.id; // team members see only the leads they took
+  const day0=new Date(now()).setHours(0,0,0,0);
+  const okStage=r=>f.stage==='working'?!r.conv:f.stage==='converted'?r.conv:f.stage==='today'?r.at>=day0:f.stage==='week'?r.at>=now()-7*864e5:true;
+  const okL=l=>l.type===f.type&&(f.src==='all'||l.src===f.src)&&(f.cat==='all'||(l.cat||'Phone')===f.cat)&&(f.brand==='all'||l.brand===f.brand)&&(f.stage!=='fresh'||mkIsNew(l));
+  const flat=rows=>rows.filter(okStage).flatMap(r=>r.ls.filter(okL).map(l=>({r,l})));
+  const tl=all.flatMap(r=>r.ls);
+  const mates=S.team.filter(m=>m.active&&(m.role==='rep'||all.some(r=>r.who===m.id))), pool=flat(takenFilter(all,f,'who'));
+  const list=flat(takenFilter(all,f)).sort((a,b)=>b.r.at-a.r.at||(a.r.name<b.r.name?-1:a.r.name>b.r.name?1:0)||b.l.posted-a.l.posted);
+  const cnt=t=>{ const o=f.type; f.type=t; const n=flat(takenFilter(all,f)).length; f.type=o; return n; };
+  const card=(id,name,av)=>{ const R=id==='all'?pool:pool.filter(x=>x.r.who===id), co=new Set(R.map(x=>x.r.id)).size;
     return `<button type="button" class="tkcard" data-tkwho="${id}" aria-pressed="${f.who===id}"><span class="top">${av}<b>${hx(name)}</b></span><span class="n">${R.length}</span>
-      <span class="s">${ap} lead${ap===1?'':'s'} · ${R.length-ap} contact${R.length-ap===1?'':'s'}</span></button>`; };
-  const filtered=f.stage!=='all'||f.src!=='all'||f.q||f.who!=='all';
-  let h=`<div class="work-head"><div><h2>Taken</h2><p>Companies the team is already working on. Before you message a company, check here who has it and talk to them first.</p></div></div>
-    <div class="tkcards">${card('all','Whole team',`<span class="uav" style="background:var(--muted);width:26px;height:26px;color:var(--panel)">All</span>`)}${mates.map(m=>card(m.id,m.id===u.id?`${m.name} (you)`:m.name,uav(m.id,26))).join('')}</div>
-    <div class="searchbar"><input type="search" id="tq" placeholder="Search company, person, phone or product" value="${hx(f.q)}" aria-label="Search taken companies">
-      <select id="tstage" aria-label="Stage">${TK_STAGES.map(([k,l])=>`<option value="${k}" ${f.stage===k?'selected':''}>${l}</option>`).join('')}</select>
-      <select id="tsrc" aria-label="Source">${TK_SRC.map(([k,l])=>`<option value="${k}" ${f.src===k?'selected':''}>${l}</option>`).join('')}</select>
+      <span class="s">requirement${R.length===1?'':'s'} · ${co} compan${co===1?'y':'ies'}</span></button>`; };
+  const filtered=f.src!=='all'||f.q||f.stage!=='all'||f.cat!=='all'||f.brand!=='all'||(isAdmin&&f.who!=='all'), mine=new Set(all.filter(r=>r.who===u.id).map(r=>r.id)).size;
+  let h=`<div class="work-head"><div><h2>Taken leads</h2><p>${isAdmin?'Requirements each team member has taken. Converted ones stay here and are also in Contacts.'
+      :`You are working on ${mine} compan${mine===1?'y':'ies'}. Message them on WhatsApp and convert the interested ones. Converted ones stay here and are also in Contacts.`}</p></div></div>
+    ${isAdmin?`<div class="tkcards">${card('all','Whole team',`<span class="uav" style="background:var(--muted);width:26px;height:26px;color:var(--panel)">All</span>`)}${mates.map(m=>card(m.id,m.id===u.id?`${m.name} (you)`:m.name,uav(m.id,26))).join('')}</div>`:''}
+    <div class="bigtabs" role="tablist" aria-label="Lead type">
+      <button type="button" role="tab" class="bigtab" data-tkt="WTB" aria-selected="${buy}"><span class="n">${cnt('WTB')}</span><b>Want to buy</b><span>Buyers looking for stock</span></button>
+      <button type="button" role="tab" class="bigtab" data-tkt="WTS" aria-selected="${!buy}"><span class="n">${cnt('WTS')}</span><b>Want to sell</b><span>Sellers with stock</span></button></div>
+    <div class="searchbar"><input type="search" id="tq" placeholder="Search requirement, company, contact or phone" value="${hx(f.q)}" aria-label="Search taken leads">
+      <select id="tstage" aria-label="When taken">${TK_STAGES.map(([k,l])=>`<option value="${k}" ${f.stage===k?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="tsrc" aria-label="Site">${TK_SRC.map(([k,l])=>`<option value="${k}" ${f.src===k?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="tcat" aria-label="Category"><option value="all">All categories</option>${[...new Set(tl.map(l=>l.cat||'Phone'))].sort().map(v=>`<option value="${v}" ${f.cat===v?'selected':''}>${hx(catLabel(v))}</option>`).join('')}</select>
+      <select id="tbrand" aria-label="Brand"><option value="all">All brands</option>${[...new Set(tl.map(l=>l.brand))].sort().map(v=>`<option ${f.brand===v?'selected':''}>${hx(v)}</option>`).join('')}</select>
       ${filtered?'<button type="button" class="backlink" style="align-self:center" data-act="tkclear">Clear</button>':''}</div>
     ${isAdmin?'<p class="muted" style="margin:0;font-size:12.5px">As admin you can release a taken lead so someone else can take it.</p>':''}
-    <div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Company</th><th>Buys or sells</th><th>Taken by</th><th>Stage</th><th>Source</th><th>Last activity</th><th></th></tr></thead><tbody>`;
-  if(!list.length) h+=`<tr><td colspan="7"><div class="empty">${filtered?'Nothing matches these filters.':'Nobody has taken a company yet.'}</div></td></tr>`;
-  for(const r of list.slice(0,200)){
-    const click=r.kind==='lead'?`data-lead="${r.l.id}"`:`data-buyer="${r.b.id}"`, mine=r.who===u.id;
-    const act=r.kind==='lead'?r.lists.map(x=>matchButton(x.id,RQ)).join('')+((isAdmin||mine)?`<button class="ghost" type="button" data-tkfree="${r.l.id}">${mine&&!isAdmin?'Let go':'Release'}</button>`:'')
-      :r.sides.map(sd=>matchButton(`C${r.b.id}:${sd}`,RQ)).join('')+`<button class="ghost" type="button" data-buyer="${r.b.id}">Open contact</button>`;
-    h+=`<tr class="click" ${click} tabindex="0"><td><b>${hx(r.name)}</b><div class="muted" style="font-size:12px">${hx(r.person)}${r.place?' · '+hx(r.place):''}</div>
-        ${r.items.length?`<div class="muted" style="font-size:12px">${hx(r.items.slice(0,2).join(', '))}${r.items.length>2?` +${r.items.length-2}`:''}</div>`:''}</td>
-      <td>${r.sides.length?r.sides.map(sd=>sidePill({side:sd})).join(' '):'<span class="muted">–</span>'}</td>
-      <td><span class="tkwho">${uav(r.who,22)}${mine?'<b>You</b>':hx(member(r.who).name)}</span></td><td>${takenStage(r)}</td>
-      <td><div class="cobadges">${r.srcs.map(srcTag).join('')}</div></td><td style="white-space:nowrap">${when(r.last)}</td><td><div class="rowacts">${act}</div></td></tr>`; }
+    <div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Requirement</th><th class="num">Qty</th><th class="num">${buy?'Target price':'Price'}</th><th>Company</th><th>Contact</th><th>Working on it</th><th></th></tr></thead><tbody>`;
+  if(!list.length) h+=`<tr><td colspan="7"><div class="empty">${filtered?'No taken leads match.':isAdmin?'Nobody is working on a lead yet.':'You have not taken any leads yet. Open Requirements and click Take on the ones you will work on.'}</div></td></tr>`;
+  for(const {r,l} of list.slice(0,200)){
+    const c=mkCo(l), me=r.who===u.id, st=leadState(l);
+    // Once converted: no Convert / Let go, just open the contact.
+    const act=matchButton(l.id,RQ)+(r.conv?(st.b?`<button class="ghost" type="button" data-lact="open" data-lid="${l.id}">Open contact</button>`:''):(me?leadButtons(l,st,false):'')+((isAdmin||me)?`<button class="ghost" type="button" data-tkfree="${l.id}">${me?'Let go':'Release'}</button>`:''));
+    h+=`<tr class="click" data-lead="${l.id}" tabindex="0"><td>${postCell(l)}</td>
+      <td class="num">${l.qty}</td><td class="num">${reqPrice({price:l.price,cur:l.cur,l,side:buy?'buy':'sell'})}</td>
+      <td><b>${hx(c.name)}</b><div class="cobadges">${srcTag(l.src)}<span class="muted">${c.flag} ${hx(c.city)} · ${when(l.posted)}</span></div></td>
+      <td class="rqwho"><b>${hx(c.contact)}</b><div><span class="muted">Phone</span> <span class="mono">${hx(c.phone)}</span></div><div><span class="muted">WhatsApp</span> <span class="mono">${hx(c.wa)}</span></div><div class="muted">${hx(c.email)}</div></td>
+      <td><span class="tkwho">${uav(r.who,22)}${me?'<b>You</b>':hx(member(r.who).name)}</span><div class="muted" style="font-size:12px">since ${when(r.at)}</div>${r.conv?`<div style="margin-top:4px"><span class="pill p-active">Converted to contact</span><div class="muted" style="font-size:12px">${when(r.convAt)}</div></div>`:''}</td>
+      <td><div class="rowacts">${act}</div></td></tr>`; }
   h+=`</tbody></table></div>${list.length>200?`<p class="muted" style="font-size:12.5px;margin:8px">Showing 200 of ${list.length}. Search or filter to narrow down.</p>`:''}</div>`;
   return h;
 }
@@ -1918,17 +2018,14 @@ function mktKpiHTML(u,R,inWords){
   const log=S.mkt.log.filter(x=>inR(x.at)&&(!id||x.by===id)), n=k=>log.filter(x=>x.k===k).length;
   const waL=S.buyers.filter(b=>/whatsapp/i.test(createdOf(b).via||'')&&inR(createdOf(b).t)&&(!id||b.owner===id)), wa=waL.length, waS=waL.filter(b=>(b.stock||[]).length&&!b.products.length).length;
   const runs=S.mkt.runs.filter(r=>inR(r.t)), ap=n('approached'), cv=n('converted');
-  const convIds=new Set(S.buyers.filter(b=>/ lead$/.test(createdOf(b).via||'')).map(b=>b.id));
-  const wonConv=S.buyers.filter(b=>convIds.has(b.id)&&(!id||b.owner===id)).flatMap(b=>b.deals).filter(d=>d.stage==='Won'&&d.wonAt&&inR(d.wonAt));
   let h=`<h3>Leads to contacts</h3><div class="tiles">${tile('Leads scraped',runs.reduce((s,r)=>s+r.added,0),`${runs.length} scrape${runs.length===1?'':'s'} ${inWords}`)}
     ${tile('Taken',ap,`leads ${inWords}`)}${tile('Converted',cv,`new contacts from leads`)}${tile('Conversion',ap?Math.round(cv/ap*100)+'%':'–','converted ÷ taken')}
-    ${tile('Not interested',n('lost'),inWords)}${tile('Added on WhatsApp',wa,`${wa-waS} buyers · ${waS} sellers ${inWords}`)}${tile('Won from converted',inrShort(wonConv.reduce((s,d)=>s+d.qty*d.price,0)),`${wonConv.length} deal${wonConv.length===1?'':'s'}`)}</div>`;
+    ${tile('Not interested',n('lost'),inWords)}${tile('Added on WhatsApp',wa,`${wa-waS} buyers · ${waS} sellers ${inWords}`)}</div>`;
   if(isAdmin){ const reps=S.team.filter(m=>m.role==='rep');
-    h+=`<div class="card"><div class="card-h"><h2>By rep</h2><span class="muted" style="font-size:12.5px">${hx(rangeText(S.dash.orange))}</span></div><div class="tbl-wrap"><table class="t"><thead><tr><th>Member</th><th class="num">Taken</th><th class="num">Converted</th><th class="num">Conversion</th><th class="num">Not interested</th><th class="num">Added on WhatsApp</th><th class="num">Won from converted</th></tr></thead><tbody>
+    h+=`<div class="card"><div class="card-h"><h2>By rep</h2><span class="muted" style="font-size:12.5px">${hx(rangeText(S.dash.orange))}</span></div><div class="tbl-wrap"><table class="t"><thead><tr><th>Member</th><th class="num">Taken</th><th class="num">Converted</th><th class="num">Conversion</th><th class="num">Not interested</th><th class="num">Added on WhatsApp</th></tr></thead><tbody>
       ${reps.map(m=>{ const L=S.mkt.log.filter(x=>inR(x.at)&&x.by===m.id), a=L.filter(x=>x.k==='approached').length, c=L.filter(x=>x.k==='converted').length;
-        const w=S.buyers.filter(b=>convIds.has(b.id)&&b.owner===m.id).flatMap(b=>b.deals).filter(d=>d.stage==='Won'&&d.wonAt&&inR(d.wonAt));
         return `<tr class="click" data-member="${m.id}"><td><div style="display:flex;gap:8px;align-items:center">${uav(m.id,26)}<b>${hx(m.name)}</b></div></td><td class="num">${a}</td><td class="num">${c}</td><td class="num">${a?Math.round(c/a*100)+'%':'–'}</td>
-          <td class="num">${L.filter(x=>x.k==='lost').length}</td><td class="num">${S.buyers.filter(b=>b.owner===m.id&&/whatsapp/i.test(createdOf(b).via||'')&&inR(createdOf(b).t)).length}</td><td class="num">${w.length?inrShort(w.reduce((s,d)=>s+d.qty*d.price,0)):'–'}</td></tr>`; }).join('')}</tbody></table></div></div>`; }
+          <td class="num">${L.filter(x=>x.k==='lost').length}</td><td class="num">${S.buyers.filter(b=>b.owner===m.id&&/whatsapp/i.test(createdOf(b).via||'')&&inR(createdOf(b).t)).length}</td></tr>`; }).join('')}</tbody></table></div></div>`; }
   const site=k=>{ const L=S.mkt.leads.filter(l=>l.src===k&&l.status==='live'), rs=S.mkt.runs.filter(r=>r.src===k&&inR(r.t)), lg=S.mkt.log.filter(x=>x.src===k&&inR(x.at));
     return `<tr><td>${srcTag(k)}</td><td class="num">${rs.reduce((s,r)=>s+r.added,0)}</td><td class="num">${L.filter(l=>['new','approached'].includes(leadState(l).k)).length}</td><td class="num">${lg.filter(x=>x.k==='approached').length}</td><td class="num">${lg.filter(x=>x.k==='converted').length}</td><td class="num">${L.filter(l=>l.contact!=null).length}</td><td>${when(mkLast(k).t)}</td></tr>`; };
   h+=`<div class="card"><div class="card-h"><h2>By site</h2></div><div class="tbl-wrap"><table class="t"><thead><tr><th>Site</th><th class="num">Scraped</th><th class="num">Open leads now</th><th class="num">Taken</th><th class="num">Converted</th><th class="num">Listings from contacts</th><th>Last scraped</th></tr></thead><tbody>${site('gsmx')}${site('kadorf')}</tbody></table></div></div>`;
@@ -1958,9 +2055,9 @@ function buyerMatches(b,q){
 function markText(text,q){ if(!q) return hx(text); const i=low(text).indexOf(q); if(i<0) return hx(text); return hx(text.slice(0,i))+'<mark>'+hx(text.slice(i,i+q.length))+'</mark>'+hx(text.slice(i+q.length)); }
 function buyersHTML(u){
   const isAdmin=u.role==='admin'; const q=low(S.dash.q).trim(); const f=S.dash.filter; const own=S.dash.owner; const BR=S.dash.brange.key==='all'?null:rangeOf(S.dash.brange);
-  const FILT=[['all','Everyone'],['mine','Mine'],['market','On marketplaces'],['deal','Open deal'],['overseas','Overseas'],['archived','Archived'],['optedout','Opted out']];
+  const FILT=[['all','Everyone'],['mine','Mine'],['market','On marketplaces'],['overseas','Overseas'],['archived','Archived'],['optedout','Opted out']];
   const RQ=new Map(); for(const r of reqCtx().reqs) if(r.b) (RQ.get(r.b.id)||RQ.set(r.b.id,[]).get(r.b.id)).push(r);
-  const side=S.dash.cside, cat=S.dash.ccat;
+  const side='all', cat=S.dash.ccat; // buyer/seller tabs removed: always all contacts
   // Order on screen: buyer/seller, then search and the other filters, then category. Each count ignores its own filter.
   const base=[];
   for(const b of S.buyers){
@@ -1978,29 +2075,43 @@ function buyersHTML(u){
   }
   const sideOk=(x,sd)=>sd==='all'||x.rq.some(r=>r.side===sd), catOk=(x,c,sd)=>c==='all'||x.rq.some(r=>r.cat===c&&(sd==='all'||r.side===sd));
   const list=base.filter(x=>sideOk(x,side)&&catOk(x,cat,side));
-  const sideN=sd=>base.filter(x=>sideOk(x,sd)&&catOk(x,cat,sd)).length;
   const cats=new Map(); for(const x of base) if(sideOk(x,side)) for(const c of new Set(x.rq.filter(r=>side==='all'||r.side===side).map(r=>r.cat))) cats.set(c,(cats.get(c)||0)+1);
   const catList=[...cats].sort((a,c)=>c[1]-a[1]);
   const lastT=b=>b.history[b.history.length-1].t;
   list.sort((a,c)=>lastT(c.b)-lastT(a.b));
   let h=`<div class="work-head"><div><h2>Contacts</h2><p>${list.length} of ${S.buyers.length} contacts${q?` match “${hx(S.dash.q)}”`:''}${BR?` · added ${hx(rangeText(S.dash.brange).replace(/^.*? · /,''))}`:''}</p></div><button class="primary" type="button" data-act="addbuyer">Add contact</button></div>
-   <div class="bigtabs three" role="tablist" aria-label="Buyers or sellers">${[['all','All contacts','Buyers and sellers'],['buy','Buyers','Want to buy from us'],['sell','Sellers','Have stock to sell']].map(([k,l,d])=>
-     `<button type="button" role="tab" class="bigtab" data-cside="${k}" aria-selected="${side===k}"><span class="n">${sideN(k)}</span><b>${l}</b><span>${d}</span></button>`).join('')}</div>
    <div class="searchbar"><input type="search" id="bq" placeholder="Search by name, company, phone, city, product or remark" value="${hx(S.dash.q)}" aria-label="Search contacts">
    <select id="bstatus" aria-label="Show">${FILT.map(([k,l])=>`<option value="${k}" ${f===k?'selected':''}>${k==='all'?'Show: everyone':l}</option>`).join('')}</select>
    ${isAdmin?`<select id="bowner" aria-label="Owner"><option value="all">All team members</option>${S.team.filter(m=>m.role==='rep').map(m=>`<option value="${m.id}" ${own===m.id?'selected':''}>${hx(m.name)}</option>`).join('')}</select>`:''}<span class="muted" style="font-size:12.5px">Added</span>${rangeCtl('brange')}</div>
    <div class="chips" role="group" aria-label="Product category"><button type="button" class="chip" data-ccat="all" aria-pressed="${cat==='all'}">All categories</button>${catList.map(([c,n])=>`<button type="button" class="chip" data-ccat="${hx(c)}" aria-pressed="${cat===c}">${hx(catLabel(c))} <span class="muted">${n}</span></button>`).join('')}
    ${side!=='all'||cat!=='all'||f!=='all'||q||own!=='all'||BR?'<button type="button" class="backlink" style="align-self:center;margin-left:4px" data-act="cclear">Clear filters</button>':''}</div>`;
-  h+=`<div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Contact</th><th>Location</th><th>Requirements</th><th>Latest remark</th><th>Owner</th><th>Added</th><th>Status</th></tr></thead><tbody>`;
-  if(!list.length) h+=`<tr><td colspan="7"><div class="empty">No buyers match. Try another keyword, filter or date range.</div></td></tr>`;
+  h+=`<div class="card" style="padding:4px 6px"><div class="tbl-wrap"><table class="t"><thead><tr><th>Contact</th><th>Location</th><th>Buys</th><th>Sells</th><th>Latest remark</th><th>Owner</th><th>Added</th><th>Status</th></tr></thead><tbody>`;
+  if(!list.length) h+=`<tr><td colspan="8"><div class="empty">No buyers match. Try another keyword, filter or date range.</div></td></tr>`;
   for(const {b,m} of list.slice(0,120)){
-    const [sk,sl]=statusOf(b); const r=m.remark||lastRemark(b); const od=b.deals.find(d=>!['Won','Lost'].includes(d.stage));
+    const [sk,sl]=statusOf(b); const r=m.remark||lastRemark(b);
     h+=`<tr class="click" data-buyer="${b.id}" tabindex="0"><td><b>${markText(b.name,q)}</b><div class="muted" style="font-size:12px">${b.business?markText(b.business,q)+' · ':''}<span class="mono">${markText(b.phone,q)}</span></div></td>
-      <td>${markText(b.location,q)}</td><td>${reqCell(RQ.get(b.id)||[],q)}${od?`<div><span class="pill p-${low(od.stage)}">${od.stage}</span></div>`:''}</td>
+      <td>${markText(b.location,q)}</td><td>${dealCell(RQ.get(b.id)||[],'buy',q)}</td><td>${dealCell(RQ.get(b.id)||[],'sell',q)}</td>
       <td style="max-width:280px">${r?`<span class="cat">${hx(r.cat)}</span> <span style="font-size:12.5px">${markText(r.text,q)}</span><div class="muted" style="font-size:11.5px">${when(r.t)}</div>`:'<span class="muted">No remarks yet</span>'}</td>
       <td><div style="display:flex;gap:6px;align-items:center">${uav(b.owner,22)}<span>${hx(member(b.owner).name.split(' ')[0])}</span></div></td><td style="white-space:nowrap">${fmtDate(createdOf(b).t)}</td><td><span class="pill p-${sk}">${sl}</span></td></tr>`; }
   h+=`</tbody></table></div></div>`;
   return h;
+}
+// Contacts table: one Buys and one Sells column. Each category is a tag with the models they deal in after it.
+// Short product line for the contacts table: "iPhone 17 Pro 256GB" → iPhone, "Galaxy S26 Ultra" → Galaxy S, "OnePlus 12" → OnePlus.
+// Keeps words up to the first one with a number; a capitalised prefix on that word stays (S26 → S, Fold7 → Fold).
+const NOBRAND=['Apple','Samsung','Google','Nvidia','AMD'];
+function lineName(brand,model){
+  const out=[]; for(const w of String(model).replace(/\(.*?\)/g,'').trim().split(/\s+/)){
+    if(/\d/.test(w)){ const m=/^([A-Z][a-z]+|[A-Z])\d/.exec(w); if(m&&(out.length||m[1].length>1)) out.push(m[1]); else if(!out.length) out.push(w.replace(/\d+(gb|tb)$/i,'')); break; } out.push(w); }
+  if(out.length>1&&/^(series|edition)$/i.test(out[out.length-1])) out.pop();
+  let n=out.join(' ')||model; const num=/^\d/.test(n)||/\d/.test(out[0]||'');
+  if(brand&&(num||!NOBRAND.includes(brand))&&!low(n).startsWith(low(brand))) n=brand+' '+n; return n;
+}
+// Contacts table: one Buys and one Sells column. Each category is a tag with the product lines they deal in after it; hover for full models.
+function dealCell(rs,side,q){
+  const by=new Map(); for(const r of rs) if(r.side===side){ const c=r.cat||'Other'; (by.get(c)||by.set(c,new Map()).get(c)); const m=by.get(c), k=lineName(r.brand,r.model); (m.get(k)||m.set(k,new Set()).get(k)).add(r.model); }
+  if(!by.size) return '<span class="muted">–</span>';
+  return [...by].map(([c,ls])=>{ const a=[...ls]; return `<div class="dline"><span class="dtag">${hx(catLabel(c))}</span> ${a.slice(0,4).map(([k,ms])=>`<span title="${hx([...ms].join(', '))}">${markText(k,q)}</span>`).join(', ')}${a.length>4?` <span class="muted">+${a.length-4}</span>`:''}</div>`; }).join('');
 }
 function buyerHTML(u){
   const b=S.buyers.find(x=>x.id===S.dash.buyerId); if(!b) return `<div class="empty">Buyer not found.</div>`;
@@ -2008,18 +2119,15 @@ function buyerHTML(u){
   const won=b.deals.filter(d=>d.stage==='Won').reduce((s,d)=>s+d.qty*d.price,0); const lr=lastRemark(b);
   const facts=[['Phone',`<span class="mono">${hx(b.phone)}</span>`],['Alternate phone',b.alt&&`<span class="mono">${hx(b.alt)}</span>`],['Location',hx(b.location)+(b.overseas?' · overseas':'')],
     ['Source',hx(b.source)+(b.referrer?`, by ${hx(b.referrer)}`:'')],['Owner',isAdmin?`<select id="ownerSel" aria-label="Owner" style="border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:3px 6px">${S.team.filter(m=>m.role==='rep').map(m=>`<option value="${m.id}" ${b.owner===m.id?'selected':''}>${hx(m.name)}</option>`).join('')}</select>`:hx(member(b.owner).name)],
-    ['Added',`${when(createdOf(b).t)} via ${hx(createdOf(b).via)}`],['GST',b.gst&&`<span class="mono">${hx(b.gst)}</span>`],['Won so far',won?inr(won):null],['Last contacted',lr?when(lr.t):'Not yet']].filter(r=>r[1]);
+    ['Added',`${when(createdOf(b).t)} via ${hx(createdOf(b).via)}`],['GST',b.gst&&`<span class="mono">${hx(b.gst)}</span>`],['Last contacted',lr?when(lr.t):'Not yet']].filter(r=>r[1]);
   let h=`<button class="backlink" type="button" data-nav="${S.dash.back||'buyers'}">← Back</button>
    <div class="card"><div class="bhead"><div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill p-${sk}">${sl}</span><span class="muted mono" style="font-size:12px">Contact #${b.id}</span></div>
      <h2 style="margin-top:6px">${hx(b.name)}</h2>${b.business?`<div class="muted">${hx(b.business)}</div>`:''}</div>
-     <div class="actions">${can?`<button class="primary" type="button" data-act="remark">Add remark</button><button class="ghost" type="button" data-act="deal">New deal</button>
+     <div class="actions">${can?`<button class="primary" type="button" data-act="remark">Add remark</button>
        ${b.status==='active'?`<button class="ghost" type="button" data-act="archive">Archive</button>`:`<button class="ghost" type="button" data-act="restore">Make active</button>`}
        ${b.status!=='optedout'?`<button class="ghost danger" type="button" data-act="optout">Opted out</button>`:''}`:''}</div></div>
      <div class="facts">${facts.map(([k,v])=>`<div><span>${k}</span>${v}</div>`).join('')}</div>
-     ${!can?`<div class="locked" style="margin-top:12px">${hx(member(b.owner).name)} owns this buyer. You can see the history, but only the owner or an admin can add remarks and deals.</div>`:''}</div>`;
-  h+=`<div class="card"><div class="card-h"><h2>Deals</h2>${can?`<button class="linkbtn" type="button" data-act="deal">+ New deal</button>`:''}</div>`+
-    (b.deals.length?`<div class="tbl-wrap"><table class="t"><thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Price / pc</th><th class="num">Value</th><th>Stage</th><th>Opened</th></tr></thead><tbody>${b.deals.slice().reverse().map(d=>`<tr><td>${hx(d.product)}</td><td class="num">${d.qty}</td><td class="num">${inr(d.price)}</td><td class="num">${inrShort(d.qty*d.price)}</td>
-      <td>${can?`<select data-stage="${d.id}" aria-label="Stage" style="border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:3px 6px">${STAGES.map(s=>`<option ${s===d.stage?'selected':''}>${s}</option>`).join('')}</select>`:`<span class="pill p-${low(d.stage)}">${d.stage}</span>`}</td><td>${fmtDate(d.created)} · ${hx(member(d.by).name.split(' ')[0])}</td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">No deals yet.${can?' Open one when the buyer asks for a rate.':''}</div>`)+`</div>`;
+     ${!can?`<div class="locked" style="margin-top:12px">${hx(member(b.owner).name)} owns this buyer. You can see the history, but only the owner or an admin can add remarks.</div>`:''}</div>`;
   h+=reqCardHTML(b);
   h+=`<div class="card"><div class="card-h"><h2>Complete history</h2><span class="muted" style="font-size:12.5px">${b.history.length} entries, newest first</span></div><div class="timeline">${b.history.slice().reverse().map(e=>{ const who=member(e.by)?member(e.by).name:'Someone';
       const what={req:'New marketplace listing',created:`Added to Buyer Tracker via ${hx(e.via)}`,remark:`Remark <span class="cat">${hx(e.cat)}</span>`,deal:'Deal opened',stage:'Deal updated',product:'New interest',status:'Status changed',owner:'Owner changed',edit:'Details edited'}[e.type]||'Update';
@@ -2126,7 +2234,7 @@ function memberModal(m){
 function memberActivity(id){
   const m=member(id); const mo=kpi(id,T.month()), wk=kpi(id,T.week()), all=kpi(id,0);
   const feed=allEvents().filter(x=>x.e.by===id).slice(0,12);
-  modal(`${mhead(hx(m.name))}<div class="tiles">${tile('Leads this month',mo.leads,m.target?`target ${m.target}`:'')}${tile('Remarks this week',wk.remarks)}${tile('Won this month',inrShort(mo.wonVal))}</div>
+  modal(`${mhead(hx(m.name))}<div class="tiles">${tile('Leads this month',mo.leads,m.target?`target ${m.target}`:'')}${tile('Remarks this week',wk.remarks)}</div>
     <h3>Recent activity</h3><div class="feed">${feed.length?feed.map(({b,e})=>`<div class="feed-item"><span class="dot ${e.type}">${dotLetter[e.type]||'•'}</span><div><div>${evLine(e,b)}</div>${e.text&&e.type!=='created'?`<div class="muted" style="font-size:12.5px">${hx(e.text)}</div>`:''}<div class="when">${when(e.t)}</div></div></div>`).join(''):'<div class="empty">No activity yet.</div>'}</div>`,()=>null);
 }
 
@@ -2138,12 +2246,14 @@ $('#v-dash').addEventListener('submit',e=>{ if(e.target.id!=='loginForm') return
   if(S.afterLoginView){ S.dash.view=S.afterLoginView; S.afterLoginView=null; } renderDash(); });
 $('#v-dash').addEventListener('click',e=>{
   const t=e.target;
+  const lg=t.closest('[data-lgtab]'); if(lg){ S.loginTab=lg.dataset.lgtab; renderDash(); return; }
   const nav=t.closest('[data-nav]'); if(nav){ S.dash.view=nav.dataset.nav; renderDash(); $('#work')&&($('#work').scrollTop=0); return; }
   const mtc=t.closest('[data-match]'); if(mtc){ matchPanel(mtc.dataset.match); return; }
   const by=t.closest('[data-buyer]'); if(by&&!t.closest('select')){ S.dash.back=S.dash.view; S.dash.view='buyer'; S.dash.buyerId=+by.dataset.buyer; renderDash(); $('#work').scrollTop=0; return; }
   const bf=t.closest('[data-bf]'); if(bf){ S.dash.filter=bf.dataset.bf; renderDash(); return; }
   const cs=t.closest('[data-cside]'); if(cs){ S.dash.cside=cs.dataset.cside; S.dash.ccat='all'; renderDash(); return; }
   const cc=t.closest('[data-ccat]'); if(cc){ S.dash.ccat=cc.dataset.ccat; renderDash(); return; }
+  const tt=t.closest('[data-tkt]'); if(tt){ S.dash.tk.type=tt.dataset.tkt; renderDash(); return; }
   const tw=t.closest('[data-tkwho]'); if(tw){ S.dash.tk.who=tw.dataset.tkwho; renderDash(); return; }
   const tf=t.closest('[data-tkfree]'); if(tf){ releaseLead(S.mkt.leads.find(x=>x.id===tf.dataset.tkfree)); renderDash(); return; }
   const mt=t.closest('[data-mt]'); if(mt){ S.dash.mk.type=mt.dataset.mt; renderDash(); return; }
@@ -2151,6 +2261,7 @@ $('#v-dash').addEventListener('click',e=>{
   if(t.closest('[data-mfresh]')){ S.dash.mk.fresh=!S.dash.mk.fresh; renderDash(); return; }
   const mh=t.closest('[data-mh]'); if(mh){ S.mkt.hist=mh.dataset.mh; renderDash(); return; }
   const la=t.closest('[data-lact]'); if(la){ if(la.dataset.lact!=='wa') e.preventDefault(); leadAct(la.dataset.lact,la.dataset.lid); return; }
+  const mc=t.closest('[data-mkco]'); if(mc){ Object.assign(S.dash.mk,{q:mc.dataset.mkco,stage:'all'}); renderDash(); return; }
   const ld=t.closest('[data-lead]'); if(ld){ leadPanel(S.mkt.leads.find(l=>l.id===ld.dataset.lead)); return; }
   const ad=t.closest('[data-adm]'); if(ad){ S.dash.adm=ad.dataset.adm; renderDash(); return; }
   const ml=t.closest('[data-mlead]'); if(ml){ mkLeadModal(S.mkt.leads.find(l=>l.id===ml.dataset.mlead)); return; }
@@ -2159,7 +2270,7 @@ $('#v-dash').addEventListener('click',e=>{
   const tb=t.closest('[data-tbot]'); if(tb){ const m=member(tb.dataset.tbot); m.bot=!m.bot; fillRepSel(); toast(m.bot?`${m.name} can now add buyers on WhatsApp`:`${m.name} can no longer use the bot`); renderDash(); return; }
   const em=t.closest('[data-editm]'); if(em){ memberModal(member(em.dataset.editm)); return; }
   const a=t.closest('[data-act]'); if(!a) return; const act=a.dataset.act; const b=S.buyers.find(x=>x.id===S.dash.buyerId);
-  if(act==='logout'){ S.user=null; renderDash(); return; }
+  if(act==='logout'){ S.user=null; S.dash.tk={...TK_F0}; renderDash(); return; }
   if(act==='addbuyer') return buyerFormModal();
   if(act==='addmember') return memberModal(null);
   if(act==='scrape'||act==='mkopen') return mkStart(a.dataset.site);
@@ -2183,8 +2294,8 @@ $('#v-dash').addEventListener('input',e=>{ if(e.target.id==='mq'){ S.dash.mk.q=e
   if(e.target.id==='bq'){ S.dash.q=e.target.value; const pos=e.target.selectionStart; renderDash(); const i=$('#bq'); i.focus(); i.setSelectionRange(pos,pos); } });
 $('#v-dash').addEventListener('change',e=>{
   const mks={mkbrand:'brand',mkregion:'region',mkcond:'cond',mkspec:'spec',mkposted:'posted',lstage:'stage',lsite:'site',lcat:'cat'}[e.target.id]; if(mks){ S.dash.mk[mks]=e.target.value; renderDash(); return; }
-  if(e.target.id==='tstage'){ S.dash.tk.stage=e.target.value; renderDash(); return; }
   if(e.target.id==='tsrc'){ S.dash.tk.src=e.target.value; renderDash(); return; }
+  if(['tstage','tcat','tbrand'].includes(e.target.id)){ S.dash.tk[e.target.id.slice(1)]=e.target.value; renderDash(); return; }
   if(e.target.id==='bstatus'){ S.dash.filter=e.target.value; renderDash(); return; }
   if(e.target.id==='bowner'){ S.dash.owner=e.target.value; renderDash(); return; }
   const rs=e.target.closest('[data-range]'); if(rs){ const w=rs.dataset.range; const old=rangeOf(S.dash[w]); S.dash[w]=rs.value==='custom'?{key:'custom',from:old.from||sod(now())-6*DAY,to:old.to}:{key:rs.value}; renderDash(); return; }
@@ -2227,13 +2338,18 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ $('#modal').hidde
 let toastT; function toast(t){ if(S&&S.sync) return; const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2800); }
 function boot(){
   timers.forEach(clearTimeout); timers=[]; const v=S?S.view:null;
-  buildState(); S.bootT=now(); S.view=v||'bot';
+  buildState(); S.buyers.forEach(b=>{ b.deals=[]; b.history=b.history.filter(e=>e.type!=='deal'&&e.type!=='stage'); }); // deals are not used
+  S.seedMax=S.nextId-1; S.bootT=now(); S.view=v||'bot';
   // Each person last checked notifications half an hour ago, so the demo opens with a few unread.
   S.seen={}; S.team.forEach(m=>S.seen[m.id]=DEMO_NOW-30*60000); S.bellN=0;
   fillRepSel(); renderSaved(); renderChat(); setView(S.view); updateBell();
 }
 boot();
 const savedView=safeGet('bt-view'); if(savedView&&['bot','dash'].includes(savedView)) setView(savedView);
+// #contact=ID&as=USER opens straight on that contact (the "open in new window" button). Only sample contacts exist in a fresh window.
+(()=>{ const h=new URLSearchParams(location.hash.slice(1)), id=+h.get('contact'), as=h.get('as');
+  if(!id||!S.buyers.some(b=>b.id===id)) return; if(as&&member(as)) S.user=as;
+  setView('dash'); S.dash.back='buyers'; S.dash.view='buyer'; S.dash.buyerId=id; renderDash(); })();
 </script>
 
 </body></html>
